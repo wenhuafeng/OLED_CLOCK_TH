@@ -1,0 +1,430 @@
+C51 COMPILER V9.54   OLED12832                                                             06/03/2019 10:28:40 PAGE 1   
+
+
+C51 COMPILER V9.54, COMPILATION OF MODULE OLED12832
+OBJECT MODULE PLACED IN .\output\OLED12832.obj
+COMPILER INVOKED BY: C:\Keil_v5\C51\BIN\C51.EXE code\OLED12832.c ROM(COMPACT) OPTIMIZE(8,SPEED) BROWSE DEBUG OBJECTEXTEN
+                    -D PRINT(.\output\OLED12832.lst) TABS(2) OBJECT(.\output\OLED12832.obj)
+
+line level    source
+
+   1          
+   2          
+   3          #ifndef  OS_MASTER_FILE
+   4          #define  OS_GLOBALS
+   5          #include "includes.h"
+   6          #endif
+   7          
+   8          //
+   9          // IC = SSD1306
+  10          // IIC
+  11          // 14PIN OLED
+  12          // 128*32
+  13          //
+  14          
+  15          #define LCD_SCL      P06
+  16          #define LCD_SDA      P07
+  17          #define LCD_RESET    P13
+  18          
+  19          #define  SDA_PORT    P0
+  20          #define  SDA_NUMBER    (1 << 7)
+  21          #define SDAIN()      do{P0IO &= ~SDA_NUMBER;}while(0)
+  22          #define SDAOUT()    do{P0IO |= SDA_NUMBER;}while(0)
+  23          
+  24          //#define OLED_WIDTH    128
+  25          //#define OLED_HIGH    (8*8)
+  26          #define I2C_OLED    0x78
+  27          #define Brightness      250
+  28          
+  29          u8 Tbl[32];
+  30          extern code u8 F8X16[];
+  31          
+  32          //-------------------------------------------------------------
+  33          void I2C_Delay(void)
+  34          {
+  35   1        u8 i = 0;
+  36   1        
+  37   1        while(i--);
+  38   1      }  
+  39          
+  40          void I2C_Start(void)
+  41          {
+  42   1        //SDAOUT();
+  43   1        //I2C_Delay();
+  44   1          LCD_SDA = 1;
+  45   1        I2C_Delay();
+  46   1          LCD_SCL = 1;
+  47   1          I2C_Delay();
+  48   1          LCD_SDA = 0;
+  49   1          I2C_Delay();
+  50   1          LCD_SCL = 0;
+  51   1          I2C_Delay();
+  52   1      }
+  53          
+  54          void I2C_Stop(void)
+C51 COMPILER V9.54   OLED12832                                                             06/03/2019 10:28:40 PAGE 2   
+
+  55          {
+  56   1          //SDAOUT();
+  57   1        //I2C_Delay();
+  58   1          LCD_SDA = 0;
+  59   1          LCD_SCL = 1;
+  60   1          I2C_Delay();
+  61   1          LCD_SDA = 1;
+  62   1          I2C_Delay();
+  63   1        LCD_SCL = 1;
+  64   1      }
+  65          
+  66          BOOLEAN I2C_SendByte(u8 Byte)
+  67          {
+  68   1          BOOLEAN F_temp = 0;
+  69   1          u8 Cnt,j;
+  70   1      
+  71   1          //SDAOUT();
+  72   1        //I2C_Delay();
+  73   1          for(Cnt=0; Cnt<8; Cnt++)
+  74   1          {
+  75   2              LCD_SCL = 0;
+  76   2              if (Byte&0x80) {
+  77   3                  LCD_SDA = 1;
+  78   3              } else {
+  79   3                  LCD_SDA = 0;
+  80   3              }
+  81   2              I2C_Delay();
+  82   2              LCD_SCL = 1;
+  83   2              I2C_Delay();
+  84   2              Byte = Byte << 1;
+  85   2          }
+  86   1        LCD_SCL = 0;
+  87   1      
+  88   1          SDAIN();
+  89   1        I2C_Delay();
+  90   1          LCD_SCL = 1;
+  91   1          I2C_Delay();
+  92   1          j = SDA_PORT;
+  93   1          if ((j & SDA_NUMBER) == SDA_NUMBER) {
+  94   2              F_temp = 1;
+  95   2          }
+  96   1          I2C_Delay();
+  97   1          LCD_SCL = 0;
+  98   1          SDAOUT();
+  99   1          I2C_Delay();
+ 100   1      
+ 101   1          return F_temp;
+ 102   1      }
+ 103          
+ 104          void OLED_WriteCmd(u8 Cmd)
+ 105          {
+ 106   1          I2C_Start();
+ 107   1          I2C_SendByte(I2C_OLED);
+ 108   1          I2C_SendByte(0x00);
+ 109   1          I2C_SendByte(Cmd);
+ 110   1        I2C_Stop();
+ 111   1      }
+ 112          
+ 113          void OLED_WriteData(u8 Data)
+ 114          {
+ 115   1          I2C_Start();
+ 116   1          I2C_SendByte(I2C_OLED);
+C51 COMPILER V9.54   OLED12832                                                             06/03/2019 10:28:40 PAGE 3   
+
+ 117   1          I2C_SendByte(0x40);
+ 118   1          I2C_SendByte(Data);
+ 119   1        I2C_Stop();
+ 120   1      }
+ 121          
+ 122          void OLED_SetXY(u8 x,u8 y)
+ 123          {
+ 124   1          OLED_WriteCmd(0xb0|y);
+ 125   1          OLED_WriteCmd(((0xf0&x)>>4)|0x10);
+ 126   1          OLED_WriteCmd((0x0f&x)|0x01);
+ 127   1      }
+ 128          
+ 129          void OLED_OFF(void)
+ 130          {
+ 131   1          OLED_WriteCmd(0xae);
+ 132   1      }
+ 133          
+ 134          void OLED_Init(void)
+ 135          {
+ 136   1          LCD_RESET = 1;
+ 137   1          DelayMs(10);
+ 138   1          LCD_RESET = 0;
+ 139   1        DelayMs(10);
+ 140   1        LCD_RESET = 1;
+ 141   1          DelayMs(10);
+ 142   1      
+ 143   1        //OLED_Delay(100000);
+ 144   1        OLED_WriteCmd(0xae);//--turn off oled panel
+ 145   1          OLED_WriteCmd(0x00);//---set low column address
+ 146   1          OLED_WriteCmd(0x10);//---set high column address
+ 147   1          OLED_WriteCmd(0x40);//--set start line address  Set Mapping RAM Display Start Line (0x00~0x3F)
+ 148   1          OLED_WriteCmd(0x81);//--set contrast control register
+ 149   1          OLED_WriteCmd(Brightness);// Set SEG Output Current Brightness
+ 150   1          OLED_WriteCmd(0xa1);//--Set SEG/Column Mapping     0xa0左右反置 0xa1正常
+ 151   1          OLED_WriteCmd(0xc8);//Set COM/Row Scan Direction   0xc0上下反置 0xc8正常
+ 152   1          OLED_WriteCmd(0xa6);//--set normal display
+ 153   1          OLED_WriteCmd(0xa8);//--set multiplex ratio(1 to 64)
+ 154   1          OLED_WriteCmd(0x3f);//--1/64 duty
+ 155   1          OLED_WriteCmd(0xd3);//-set display offset        Shift Mapping RAM Counter (0x00~0x3F)
+ 156   1          OLED_WriteCmd(0x00);//-not offset
+ 157   1          OLED_WriteCmd(0xd5);//--set display clock divide ratio/oscillator frequency
+ 158   1          OLED_WriteCmd(0x80);//--set divide ratio, Set Clock as 100 Frames/Sec
+ 159   1          OLED_WriteCmd(0xd9);//--set pre-charge period
+ 160   1          OLED_WriteCmd(0xf1);//Set Pre-Charge as 15 Clocks & Discharge as 1 Clock
+ 161   1          OLED_WriteCmd(0xda);//--set com pins hardware configuration
+ 162   1          OLED_WriteCmd(0x12);//
+ 163   1          OLED_WriteCmd(0xdb);//--set vcomh
+ 164   1          OLED_WriteCmd(0x40);//Set VCOM Deselect Level
+ 165   1          OLED_WriteCmd(0x20);//-Set Page Addressing Mode (0x00/0x01/0x02)
+ 166   1          OLED_WriteCmd(0x02);//
+ 167   1          OLED_WriteCmd(0x8d);//--set Charge Pump enable/disable
+ 168   1          OLED_WriteCmd(0x14);//--set(0x10) disable
+ 169   1          OLED_WriteCmd(0xa4);// Disable Entire Display On (0xa4/0xa5)
+ 170   1          OLED_WriteCmd(0xa6);// Disable Inverse Display On (0xa6/a7)
+ 171   1          OLED_WriteCmd(0xaf);//--turn on oled panel
+ 172   1          //OLED_Clear();
+ 173   1          OLED_SetXY(0,0);
+ 174   1      }
+ 175          
+ 176          //==============================================================
+ 177          //函数名：LCD_P8x16Str(unsigned char x,unsigned char y,unsigned char *p)
+ 178          //功能描述：写入一组标准ASCII字符串
+C51 COMPILER V9.54   OLED12832                                                             06/03/2019 10:28:40 PAGE 4   
+
+ 179          //参数：显示的位置（x,y），y为页范围0～7，要显示的字符串
+ 180          //返回：无
+ 181          //==============================================================  
+ 182          void LCD_P8x16Str(void)
+ 183          {
+ 184   1        u8 c,i,j;
+ 185   1        u8 z,T,x,y;
+ 186   1      
+ 187   1        x = 0x00;
+ 188   1        y = 0x00;
+ 189   1        j = 0x00;
+ 190   1      
+ 191   1        do
+ 192   1        {
+ 193   2          c = Tbl[j]-32;
+ 194   2        OLED_SetXY(x,y);
+ 195   2          for(i=0;i<8;i++) {
+ 196   3            T = 0x00;
+ 197   3            z = F8X16[c*16+i];
+ 198   3            if (z & 0x08) {
+ 199   4                T |= 0x80;
+ 200   4          }
+ 201   3            if (z & 0x04) {
+ 202   4                T |= 0x20;
+ 203   4          }
+ 204   3            if (z & 0x02) {
+ 205   4                T |= 0x08;
+ 206   4          }
+ 207   3            if (z & 0x01) {
+ 208   4                T |= 0x02;
+ 209   4          }
+ 210   3            OLED_WriteData(T);
+ 211   3          }
+ 212   2          OLED_SetXY(x,y+1);
+ 213   2          for(i=0;i<8;i++) {
+ 214   3            T = 0x00;
+ 215   3            z = F8X16[c*16+i];
+ 216   3            if (z & 0x80) {
+ 217   4                T |= 0x80;
+ 218   4          }
+ 219   3            if (z & 0x40) {
+ 220   4                T |= 0x20;
+ 221   4          }
+ 222   3            if (z & 0x20) {
+ 223   4                T |= 0x08;
+ 224   4          }
+ 225   3            if (z & 0x10) {
+ 226   4                T |= 0x02;
+ 227   4          }
+ 228   3            OLED_WriteData(T);
+ 229   3          }
+ 230   2          OLED_SetXY(x,y+2);
+ 231   2          for(i=0;i<8;i++) {
+ 232   3            T = 0x00;
+ 233   3            z = F8X16[c*16+i+8];
+ 234   3            if (z & 0x08) {
+ 235   4                T |= 0x80;
+ 236   4          }
+ 237   3            if (z & 0x04) {
+ 238   4                T |= 0x20;
+ 239   4          }
+ 240   3            if (z & 0x02) {
+C51 COMPILER V9.54   OLED12832                                                             06/03/2019 10:28:40 PAGE 5   
+
+ 241   4                T |= 0x08;
+ 242   4          }
+ 243   3            if (z & 0x01) {
+ 244   4                T |= 0x02;
+ 245   4          }
+ 246   3            OLED_WriteData(T);
+ 247   3          }
+ 248   2        OLED_SetXY(x,y+3);    
+ 249   2          for(i=0;i<8;i++) {
+ 250   3            T = 0x00;
+ 251   3            z = F8X16[c*16+i+8];
+ 252   3            if (z & 0x80) {
+ 253   4                T |= 0x80;
+ 254   4          }
+ 255   3            if (z & 0x40) {
+ 256   4                T |= 0x20;
+ 257   4          }
+ 258   3            if (z & 0x20) {
+ 259   4                T |= 0x08;
+ 260   4          }
+ 261   3            if (z & 0x10) {
+ 262   4                T |= 0x02;
+ 263   4          }
+ 264   3            OLED_WriteData(T);
+ 265   3          }
+ 266   2          x+=8;
+ 267   2          j++;
+ 268   2        if (j == 16) {
+ 269   3              x = 0x00;
+ 270   3          y = 4;
+ 271   3        }
+ 272   2        } while (j < 32);
+ 273   1      }
+ 274          
+ 275          code u8 WeekTable[8][3] = 
+ 276          {
+ 277            'S','u','n',
+ 278            'M','o','n',
+ 279            'T','u','e',
+ 280            'W','e','d',
+ 281            'T','h','u',
+ 282            'F','r','i',
+ 283            'S','t','a',
+ 284          };
+ 285          
+ 286          void OledDispClock(void)
+ 287          {
+ 288   1          u8 i;
+ 289   1      
+ 290   1          
+ 291   1        for (i=0; i<32; i++) {
+ 292   2              Tbl[i] = ' ';
+ 293   2        }
+ 294   1      
+ 295   1          if (SetItem == _CLOCK_SET_YEAR_) {
+ 296   2              if (F_SET_COL || F_HoldKey) {
+ 297   3                  Tbl[1] = '2';
+ 298   3            Tbl[2] = '0';
+ 299   3                  Tbl[3] = HexToAsc(TIME.year%100/10);
+ 300   3            Tbl[4] = HexToAsc(TIME.year%100%10);
+ 301   3              }
+ 302   2          } else {
+C51 COMPILER V9.54   OLED12832                                                             06/03/2019 10:28:40 PAGE 6   
+
+ 303   2              Tbl[1] = '2';
+ 304   2          Tbl[2] = '0';
+ 305   2              Tbl[3] = HexToAsc(TIME.year%100/10);
+ 306   2          Tbl[4] = HexToAsc(TIME.year%100%10);
+ 307   2        }
+ 308   1          Tbl[5] = '-';
+ 309   1          if (SetItem == _CLOCK_SET_MONTH_) {
+ 310   2              if (F_SET_COL || F_HoldKey) {
+ 311   3                  Tbl[6] = HexToAsc(TIME.month/10);
+ 312   3            Tbl[7] = HexToAsc(TIME.month%10);
+ 313   3              }
+ 314   2          } else {
+ 315   2              Tbl[6] = HexToAsc(TIME.month/10);
+ 316   2          Tbl[7] = HexToAsc(TIME.month%10);
+ 317   2        }
+ 318   1          Tbl[8] = '-';
+ 319   1          if (SetItem == _CLOCK_SET_DAY_) {
+ 320   2              if (F_SET_COL || F_HoldKey) {
+ 321   3                  Tbl[9] = HexToAsc(TIME.day/10);
+ 322   3            Tbl[10] = HexToAsc(TIME.day%10);
+ 323   3              }
+ 324   2          } else {
+ 325   2              Tbl[9] = HexToAsc(TIME.day/10);
+ 326   2          Tbl[10] = HexToAsc(TIME.day%10);
+ 327   2        }
+ 328   1          Tbl[12] = WeekTable[TIME.week][0];
+ 329   1          Tbl[13] = WeekTable[TIME.week][1];
+ 330   1          Tbl[14] = WeekTable[TIME.week][2];
+ 331   1      
+ 332   1          if (SetItem == _CLOCK_SET_HOUR_) {
+ 333   2              if (F_SET_COL || F_HoldKey) {
+ 334   3                  Tbl[20] = HexToAsc(TIME.hour/10);
+ 335   3            Tbl[21] = HexToAsc(TIME.hour%10);
+ 336   3              }
+ 337   2          } else {
+ 338   2          Tbl[20] = HexToAsc(TIME.hour/10);
+ 339   2          Tbl[21] = HexToAsc(TIME.hour%10);
+ 340   2          }
+ 341   1          Tbl[22] = ':';
+ 342   1          if (SetItem == _CLOCK_SET_MIN_) {
+ 343   2              if (F_SET_COL || F_HoldKey) {
+ 344   3            Tbl[23] = HexToAsc(TIME.min/10);
+ 345   3            Tbl[24] = HexToAsc(TIME.min%10);
+ 346   3              }
+ 347   2          } else {
+ 348   2              Tbl[23] = HexToAsc(TIME.min/10);
+ 349   2          Tbl[24] = HexToAsc(TIME.min%10);
+ 350   2        }
+ 351   1          
+ 352   1          Tbl[25] = ':';
+ 353   1          Tbl[26] = HexToAsc(TIME.sec/10);
+ 354   1          Tbl[27] = HexToAsc(TIME.sec%10);
+ 355   1        //LCD_P8x16Str();
+ 356   1      }
+ 357          
+ 358          void OledDispTH(void)
+ 359          {
+ 360   1          u8 i;
+ 361   1        u8 tmp0,tmp1;
+ 362   1        s8 tmp2,tmp3;
+ 363   1          
+ 364   1        for (i=0; i<32; i++) {
+C51 COMPILER V9.54   OLED12832                                                             06/03/2019 10:28:40 PAGE 7   
+
+ 365   2              Tbl[i] = ' ';
+ 366   2        }
+ 367   1      
+ 368   1        //temp = 99.12*100;//disp TEST
+ 369   1        //humi = 5.1*100;//disp TEST
+ 370   1      
+ 371   1          tmp3 = temp/100;//high
+ 372   1        tmp2 = temp%100;//low
+ 373   1        if (temp < 0) {
+ 374   2          Tbl[4] = '-';
+ 375   2          tmp3 = 0-tmp3;
+ 376   2          tmp2 = 0-tmp2;
+ 377   2        }
+ 378   1        Tbl[5] = HexToAsc(tmp3/10);
+ 379   1        Tbl[6] = HexToAsc(tmp3%10);
+ 380   1        Tbl[7] = '.';
+ 381   1        Tbl[8] = HexToAsc(tmp2/10);
+ 382   1        Tbl[9] = HexToAsc(tmp2%10);
+ 383   1        Tbl[10] = 'C';
+ 384   1        
+ 385   1        tmp1 = humi/100;//high
+ 386   1        tmp0 = humi%100;//low
+ 387   1        Tbl[16+5] = HexToAsc(tmp1/10);
+ 388   1        Tbl[16+6] = HexToAsc(tmp1%10);
+ 389   1        Tbl[16+7] = '.';
+ 390   1        Tbl[16+8] = HexToAsc(tmp0/10);
+ 391   1        Tbl[16+9] = HexToAsc(tmp0%10);
+ 392   1        Tbl[16+10] = '%';
+ 393   1        
+ 394   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =   1261    ----
+   CONSTANT SIZE    =     24    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =     32       9
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----       1
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

@@ -1,0 +1,573 @@
+C51 COMPILER V9.54   RTC                                                                   06/03/2019 10:28:35 PAGE 1   
+
+
+C51 COMPILER V9.54, COMPILATION OF MODULE RTC
+OBJECT MODULE PLACED IN .\output\RTC.obj
+COMPILER INVOKED BY: C:\Keil_v5\C51\BIN\C51.EXE code\RTC.c ROM(COMPACT) OPTIMIZE(8,SPEED) BROWSE DEBUG OBJECTEXTEND PRIN
+                    -T(.\output\RTC.lst) TABS(2) OBJECT(.\output\RTC.obj)
+
+line level    source
+
+   1          
+   2          //=======================================================================================
+   3          /*=======================================================================================
+   4            Description : RTC operation
+   5            Version     : V1.00
+   6            Date-Time   : 2015-3-25 19:50:42 ~
+   7            Author    : 
+   8          //=======================================================================================
+   9          //======================================================================================*/
+  10          
+  11          
+  12          
+  13          
+  14          #ifndef  OS_MASTER_FILE
+  15          #define  OS_GLOBALS
+  16          #include "includes.h"
+  17          #endif
+  18          
+  19          
+  20          //RTC define
+  21          rtc_counter_value_t TIME;
+  22          
+  23          
+  24          //Init（year,month,day,hour,min,sec）
+  25          void TimeInit(void)
+  26          {
+  27   1        TIME.year  = 2017;
+  28   1        TIME.month = 7;
+  29   1        TIME.day   = 8;
+  30   1        Week_Deal(TIME.year, TIME.month, TIME.day);
+  31   1        TIME.hour  = 10;
+  32   1        TIME.min   = 0;
+  33   1        TIME.sec   = 0;  
+  34   1      }
+  35          
+  36          /*
+  37          INT8U TimeFormat(INT8U hour)
+  38          {
+  39            if (Time_format) {// format = 1 12HR
+  40              if (hour == 0) {
+  41                return (12);
+  42              } else if (hour >12) {
+  43                return (hour - 12);
+  44              } else { 
+  45                return (hour);
+  46              }
+  47            } else {     // format = 0 24HR
+  48               return (hour);
+  49            }  
+  50          }*/
+  51          
+  52          //Time running（hour,min,sec）
+  53          void Time_Deal(void)
+  54          {
+C51 COMPILER V9.54   RTC                                                                   06/03/2019 10:28:35 PAGE 2   
+
+  55   1        TIME.sec++;                 //sec
+  56   1        if (TIME.sec == 60) {
+  57   2          flag_1min_on = 1;
+  58   2          TIME.sec = 0;
+  59   2          TIME.min++;
+  60   2          if (TIME.min == 60) {
+  61   3            TIME.min = 0;            //hour
+  62   3            TIME.hour++;
+  63   3            if (TIME.hour > 23) {
+  64   4              TIME.hour = 0;
+  65   4              TIME.day ++;                    //day
+  66   4              if (TIME.day > Date_Day(TIME.year,TIME.month)) {
+  67   5                TIME.day = 1;
+  68   5                TIME.month++;                  //month
+  69   5                if (TIME.month > 12) {
+  70   6                  TIME.month = 1;
+  71   6                  TIME.year++;                //year
+  72   6                }    
+  73   5              }
+  74   4              Week_Deal(TIME.year,TIME.month,TIME.day);//week
+  75   4            }
+  76   3      
+  77   3            //if ((TIME.hour == 2 || TIME.hour == 14) && flag_rdstime_on) {
+  78   3            //  flag_auto_time_on = 1;
+  79   3            //}
+  80   3          }      
+  81   2        }
+  82   1      }
+  83          
+  84          //处理闰年，平年
+  85          INT8U Date_Day(INT16U Year,INT8U Month)
+  86          {
+  87   1        INT8U day_temp;
+  88   1        INT8U const_days[]={0,31,28,31,30,31,30,31,31,30,31,30,31};
+  89   1      
+  90   1        if (Month == 2) {
+  91   2          if(((Year%4 == 0) && (Year%100 != 0)) || (Year%400 == 0)) {
+  92   3            day_temp=29;
+  93   3          } else {  
+  94   3            day_temp=28;
+  95   3          }
+  96   2        } else {
+  97   2          day_temp = const_days[Month];
+  98   2        }
+  99   1      
+ 100   1        return day_temp;    
+ 101   1      }
+ 102          
+ 103          //处理星期
+ 104          void Week_Deal(INT16U Year,INT8U Month,INT8U Day)
+ 105          {
+ 106   1        INT16S   temp_year=0;
+ 107   1        INT8S    temp_cen=0;
+ 108   1        INT8S  temp_month=0;
+ 109   1        INT8S  week_data;
+ 110   1        
+ 111   1        if (Month < 3) {  
+ 112   2          temp_month = Month+12;  
+ 113   2          temp_year = Year-1;  
+ 114   2        } else {  
+ 115   2          temp_month = Month;
+ 116   2          temp_year = Year;
+C51 COMPILER V9.54   RTC                                                                   06/03/2019 10:28:35 PAGE 3   
+
+ 117   2        }
+ 118   1        
+ 119   1        temp_cen = temp_year / 100;    //C;
+ 120   1        temp_year = temp_year % 100;  //Y
+ 121   1      
+ 122   1        week_data = temp_year + temp_year/4 + temp_cen/4;
+ 123   1        week_data = week_data-2*temp_cen + 26*(temp_month+1)/10 + Day-1;
+ 124   1        TIME.week = (week_data+140)%7;  
+ 125   1      
+ 126   1        //return week_data;  
+ 127   1      }
+ 128          
+ 129          /////********************************************************************//**
+ 130          //// * @brief:      MIN++
+ 131          //// *              
+ 132          //// * @param[in]:  NONE
+ 133          //// *               
+ 134          //// * @return:     NONE
+ 135          //// *********************************************************************/
+ 136          ////BOOLEAN MIN_SET (BOOLEAN flag)
+ 137          ////{
+ 138          ////  TIME.sec = 0x00;
+ 139          ////    if (flag == 0) {
+ 140          ////        if (--TIME.min == 0xff) {
+ 141          ////      TIME.min = 59;
+ 142          ////      return 1;
+ 143          ////    } else {
+ 144          ////      return 0;
+ 145          ////    }
+ 146          ////  } else {
+ 147          ////    if (++TIME.min >= 60) {
+ 148          ////      TIME.min = 0;
+ 149          ////      return 1;
+ 150          ////    } else {
+ 151          ////      return 0;
+ 152          ////    }
+ 153          ////  }
+ 154          ////}
+ 155          
+ 156          /////********************************************************************//**
+ 157          //// * @brief:      HOUR++
+ 158          //// *              
+ 159          //// *
+ 160          //// * @param[in]:  NONE
+ 161          //// *               
+ 162          //// * @return:     NONE
+ 163          //// *********************************************************************/
+ 164          ////BOOLEAN HOUR_SET (BOOLEAN flag)
+ 165          ////{
+ 166          ////    if (flag == 0) {
+ 167          ////        if (--TIME.hour == 0xff) {
+ 168          ////      TIME.hour = 23;
+ 169          ////      return 1;
+ 170          ////    } else {
+ 171          ////      return 0;
+ 172          ////    }
+ 173          ////    } else {
+ 174          ////    if (++TIME.hour >= 24) {
+ 175          ////      TIME.hour = 0;
+ 176          ////      return 1;
+ 177          ////    } else {
+ 178          ////      return 0;
+C51 COMPILER V9.54   RTC                                                                   06/03/2019 10:28:35 PAGE 4   
+
+ 179          ////    }
+ 180          ////  }
+ 181          ////}
+ 182          
+ 183          /////********************************************************************//**
+ 184          //// * @brief:      DAY++
+ 185          //// *              and Get max day
+ 186          //// *
+ 187          //// * @param[in]:  NONE
+ 188          //// *               
+ 189          //// * @return:     NONE
+ 190          //// *********************************************************************/
+ 191          ////BOOLEAN DAY_SET (BOOLEAN flag)
+ 192          ////{
+ 193          ////    if (flag == 0) {
+ 194          ////      if (--TIME.day == 0) {
+ 195          ////      TIME.day = Date_Day(TIME.year,TIME.month);
+ 196          ////      return 1;
+ 197          ////    } else {
+ 198          ////      return 0;
+ 199          ////    }
+ 200          ////    } else {
+ 201          ////    if (++TIME.day > Date_Day(TIME.year,TIME.month)) {
+ 202          ////      TIME.day = 1;
+ 203          ////      return 1;
+ 204          ////    } else {
+ 205          ////      return 0;
+ 206          ////    }
+ 207          ////  }
+ 208          ////}
+ 209          
+ 210          /////********************************************************************//**
+ 211          //// * @brief:      MONTH INC
+ 212          //// *              
+ 213          //// *
+ 214          //// * @param[in]:  NONE
+ 215          //// *               
+ 216          //// * @return:     NONE
+ 217          //// *********************************************************************/
+ 218          ////BOOLEAN MONTH_SET (BOOLEAN flag)
+ 219          ////{
+ 220          ////  BOOLEAN F_tmp;
+ 221          ////  INT8U MaxDay;
+ 222          ////  
+ 223          ////    if (flag == 0) {
+ 224          ////        if (--TIME.month == 0) {
+ 225          ////      TIME.month = 12;
+ 226          ////      F_tmp = 1;
+ 227          ////    } else {
+ 228          ////      F_tmp = 0;
+ 229          ////    }
+ 230          ////    
+ 231          ////    //update Max day
+ 232          ////    MaxDay = Date_Day(TIME.year,TIME.month);
+ 233          ////    if (TIME.day >= MaxDay) {
+ 234          ////      TIME.day = MaxDay;
+ 235          ////    }
+ 236          ////    } else {
+ 237          ////    if (++TIME.month >= 13) {
+ 238          ////      TIME.month = 1;
+ 239          ////      F_tmp = 1;
+ 240          ////    } else {
+C51 COMPILER V9.54   RTC                                                                   06/03/2019 10:28:35 PAGE 5   
+
+ 241          ////      F_tmp = 0;
+ 242          ////    }
+ 243          ////    
+ 244          ////    //update Max day
+ 245          ////    MaxDay = Date_Day(TIME.year,TIME.month);
+ 246          ////    if (TIME.day >= MaxDay) {
+ 247          ////      TIME.day = MaxDay;
+ 248          ////    }
+ 249          ////  }
+ 250          
+ 251          ////  return F_tmp;
+ 252          ////}
+ 253          
+ 254          /////********************************************************************//**
+ 255          //// * @brief:      MONTH INC
+ 256          //// *              
+ 257          //// *
+ 258          //// * @param[in]:  NONE
+ 259          //// *               
+ 260          //// * @return:     NONE
+ 261          //// *********************************************************************/
+ 262          ////BOOLEAN YEAR_SET (BOOLEAN flag)
+ 263          ////{
+ 264          ////  BOOLEAN F_tmp;
+ 265          ////  INT8U MaxDay;
+ 266          ////  
+ 267          ////    if (flag == 0) {
+ 268          ////        if (--TIME.year == 1999) {
+ 269          ////      TIME.year = 2099;
+ 270          ////      F_tmp = 1;
+ 271          ////    } else {
+ 272          ////      F_tmp = 0;
+ 273          ////    }
+ 274          ////    
+ 275          ////    //update Max day
+ 276          ////    MaxDay = Date_Day(TIME.year,TIME.month);
+ 277          ////    if (TIME.day >= MaxDay) {
+ 278          ////      TIME.day = MaxDay;
+ 279          ////    }
+ 280          ////  } else {
+ 281          ////    if (++TIME.year > 2099) {
+ 282          ////      TIME.year = 2000;
+ 283          ////      F_tmp = 1;
+ 284          ////    } else {
+ 285          ////      F_tmp = 0;
+ 286          ////    }
+ 287          ////    
+ 288          ////    //update Max day
+ 289          ////    MaxDay = Date_Day(TIME.year,TIME.month);
+ 290          ////    if (TIME.day >= MaxDay) {
+ 291          ////      TIME.day = MaxDay;
+ 292          ////    }
+ 293          ////  }
+ 294          
+ 295          ////  return F_tmp;
+ 296          ////}
+ 297          
+ 298          /********************************************************************//**
+ 299           * @brief:      MONTH DEC
+ 300           *              
+ 301           *
+ 302           * @param[in]:    NONE
+C51 COMPILER V9.54   RTC                                                                   06/03/2019 10:28:35 PAGE 6   
+
+ 303           *               
+ 304           * @return:     NONE
+ 305           *********************************************************************/
+ 306          
+ 307          /********************************************************************//**
+ 308           * @brief:      MIN++
+ 309           *              
+ 310           * @param[in]:  NONE
+ 311           *               
+ 312           * @return:     NONE
+ 313           *********************************************************************/
+ 314          void MIN_INC (void)
+ 315          {
+ 316   1        TIME.sec = 0x00;
+ 317   1        if (++TIME.min >= 60) {
+ 318   2          TIME.min = 0;
+ 319   2          //return 0;
+ 320   2        } else {
+ 321   2          //return 0;
+ 322   2        }
+ 323   1      }
+ 324          
+ 325          /********************************************************************//**
+ 326           * @brief:      MIN--
+ 327           *              
+ 328           *
+ 329           * @param[in]:  NONE
+ 330           *               
+ 331           * @return:     NONE
+ 332           *********************************************************************/
+ 333          void MIN_DEC (void)
+ 334          {
+ 335   1        TIME.sec = 0x00;
+ 336   1        if (--TIME.min == 0xff) {
+ 337   2          TIME.min = 59;
+ 338   2          //return 1;
+ 339   2        } else {
+ 340   2          //return 0;
+ 341   2        }
+ 342   1      }
+ 343          
+ 344          /********************************************************************//**
+ 345           * @brief:      HOUR++
+ 346           *              
+ 347           *
+ 348           * @param[in]:  NONE
+ 349           *               
+ 350           * @return:     NONE
+ 351           *********************************************************************/
+ 352          void HOUR_INC (void)
+ 353          {
+ 354   1        if (++TIME.hour >= 24) {
+ 355   2          TIME.hour = 0;
+ 356   2          //return 1;
+ 357   2        } else {
+ 358   2          //return 0;
+ 359   2        }
+ 360   1        
+ 361   1      }
+ 362          
+ 363          /********************************************************************//**
+ 364           * @brief:      HOUR--
+C51 COMPILER V9.54   RTC                                                                   06/03/2019 10:28:35 PAGE 7   
+
+ 365           *              
+ 366           *
+ 367           * @param[in]:  NONE
+ 368           *               
+ 369           * @return:     NONE
+ 370           *********************************************************************/
+ 371          void HOUR_DEC (void)
+ 372          {
+ 373   1        if (--TIME.hour == 0xff) {
+ 374   2          TIME.hour = 23;
+ 375   2          //return 1;
+ 376   2        } else {
+ 377   2          //return 0;
+ 378   2        }
+ 379   1        
+ 380   1      }
+ 381          
+ 382          /********************************************************************//**
+ 383           * @brief:      DAY++
+ 384           *              and Get max day
+ 385           *
+ 386           * @param[in]:  NONE
+ 387           *               
+ 388           * @return:     NONE
+ 389           *********************************************************************/
+ 390          void DAY_INC (void)
+ 391          {  
+ 392   1        if (++TIME.day > Date_Day(TIME.year,TIME.month)) {
+ 393   2          TIME.day = 1;
+ 394   2          //return 1;
+ 395   2        } else {
+ 396   2          //return 0;
+ 397   2          }
+ 398   1      }
+ 399          
+ 400          /********************************************************************//**
+ 401           * @brief:      DAY--
+ 402           *              and Get max day
+ 403           *
+ 404           * @param[in]:  NONE
+ 405           *               
+ 406           * @return:     NONE
+ 407           *********************************************************************/
+ 408          void DAY_DEC (void)
+ 409          {
+ 410   1        if (--TIME.day == 0) {
+ 411   2          TIME.day = Date_Day(TIME.year,TIME.month);
+ 412   2          //return 1;
+ 413   2        } else {
+ 414   2          //return 0;
+ 415   2        }
+ 416   1      }
+ 417          
+ 418          
+ 419          /********************************************************************//**
+ 420           * @brief:      MONTH INC
+ 421           *              
+ 422           *
+ 423           * @param[in]:  NONE
+ 424           *               
+ 425           * @return:     NONE
+ 426           *********************************************************************/
+C51 COMPILER V9.54   RTC                                                                   06/03/2019 10:28:35 PAGE 8   
+
+ 427          void MONTH_INC (void)
+ 428          {
+ 429   1        //BOOLEAN F_tmp;
+ 430   1        INT8U MaxDay;
+ 431   1        
+ 432   1        if (++TIME.month >= 13) {
+ 433   2          TIME.month = 1;
+ 434   2          //F_tmp = 1;
+ 435   2        } else {
+ 436   2          //F_tmp = 0;
+ 437   2        }
+ 438   1        
+ 439   1        //update Max day
+ 440   1        MaxDay = Date_Day(TIME.year,TIME.month);
+ 441   1        if (TIME.day >= MaxDay) {
+ 442   2          TIME.day = MaxDay;
+ 443   2        }
+ 444   1        
+ 445   1        //return F_tmp;
+ 446   1      }
+ 447          
+ 448          /********************************************************************//**
+ 449           * @brief:      MONTH DEC
+ 450           *              
+ 451           *
+ 452           * @param[in]:  NONE
+ 453           *               
+ 454           * @return:     NONE
+ 455           *********************************************************************/
+ 456          void MONTH_DEC (void)
+ 457          {
+ 458   1        //BOOLEAN F_tmp;
+ 459   1        INT8U MaxDay;
+ 460   1        
+ 461   1        if (--TIME.month == 0) {
+ 462   2          TIME.month = 12;
+ 463   2          //F_tmp = 1;
+ 464   2        } else {
+ 465   2          //F_tmp = 0;
+ 466   2        }
+ 467   1        
+ 468   1        //update Max day
+ 469   1        MaxDay = Date_Day(TIME.year,TIME.month);
+ 470   1        if (TIME.day >= MaxDay) {
+ 471   2          TIME.day = MaxDay;
+ 472   2        }
+ 473   1        
+ 474   1        //return F_tmp;
+ 475   1      }
+ 476          
+ 477          /********************************************************************//**
+ 478           * @brief:      MONTH INC
+ 479           *              
+ 480           *
+ 481           * @param[in]:  NONE
+ 482           *               
+ 483           * @return:     NONE
+ 484           *********************************************************************/
+ 485          void YEAR_INC (void)
+ 486          {
+ 487   1        //BOOLEAN F_tmp;
+ 488   1        INT8U MaxDay;
+C51 COMPILER V9.54   RTC                                                                   06/03/2019 10:28:35 PAGE 9   
+
+ 489   1        
+ 490   1        if (++TIME.year > 2099) {
+ 491   2          TIME.year = 2000;
+ 492   2          //F_tmp = 1;
+ 493   2        } else {
+ 494   2          //F_tmp = 0;
+ 495   2        }
+ 496   1        
+ 497   1        //update Max day
+ 498   1        MaxDay = Date_Day(TIME.year,TIME.month);
+ 499   1        if (TIME.day >= MaxDay) {
+ 500   2          TIME.day = MaxDay;
+ 501   2        }
+ 502   1        
+ 503   1        //return F_tmp;
+ 504   1      }
+ 505          
+ 506          /********************************************************************//**
+ 507           * @brief:      MONTH DEC
+ 508           *              
+ 509           *
+ 510           * @param[in]:  NONE
+ 511           *               
+ 512           * @return:     NONE
+ 513           *********************************************************************/
+ 514          void YEAR_DEC (void)
+ 515          {
+ 516   1        //BOOLEAN F_tmp;
+ 517   1        INT8U MaxDay;
+ 518   1        
+ 519   1        if (--TIME.year == 1999) {
+ 520   2          TIME.year = 2099;
+ 521   2          //F_tmp = 1;
+ 522   2        } else {
+ 523   2          //F_tmp = 0;
+ 524   2        }
+ 525   1        
+ 526   1        //update Max day
+ 527   1        MaxDay = Date_Day(TIME.year,TIME.month);
+ 528   1        if (TIME.day >= MaxDay) {
+ 529   2          TIME.day = MaxDay;
+ 530   2        }
+ 531   1      
+ 532   1        //return F_tmp;
+ 533   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    534    ----
+   CONSTANT SIZE    =     13    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =      8      20
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

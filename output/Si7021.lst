@@ -1,0 +1,286 @@
+C51 COMPILER V9.54   SI7021                                                                06/03/2019 10:28:39 PAGE 1   
+
+
+C51 COMPILER V9.54, COMPILATION OF MODULE SI7021
+OBJECT MODULE PLACED IN .\output\Si7021.obj
+COMPILER INVOKED BY: C:\Keil_v5\C51\BIN\C51.EXE code\Si7021.c ROM(COMPACT) OPTIMIZE(8,SPEED) BROWSE DEBUG OBJECTEXTEND P
+                    -RINT(.\output\Si7021.lst) TABS(2) OBJECT(.\output\Si7021.obj)
+
+line level    source
+
+   1          
+   2          
+   3          #ifndef  OS_MASTER_FILE
+   4          #define  OS_GLOBALS
+   5          #include "includes.h"
+   6          #endif
+   7          
+   8          
+   9          si7021_value_ST gv_si7021_value;
+  10          s16 temp;
+  11          u16 humi;//0%~100%
+  12          
+  13          
+  14          void delay_x_us (void)//(1+2)*60=180???? 180us
+  15          {
+  16   1        u8 x=250;
+  17   1        for (; x>0; x--) {
+  18   2          _nop_();
+  19   2        }
+  20   1      }
+  21                                                                    
+  22          //????: start_i2c
+  23          //????: i2c ??????
+  24          //????:
+  25          // ? ? ?:
+  26          void start_i2c (void)
+  27          {
+  28   1        SI7021_SDA_HIGH();
+  29   1        delay_x_us();
+  30   1        SI7021_SCL_HIGH();
+  31   1        delay_x_us();
+  32   1        SI7021_SDA_LOW();
+  33   1        delay_x_us();
+  34   1        SI7021_SCL_LOW();
+  35   1        delay_x_us();
+  36   1      }
+  37          
+  38          //????: stop_i2c
+  39          //????: i2c ??????
+  40          //????:
+  41          // ? ? ?:
+  42          void stop_i2c ( void )
+  43          {
+  44   1        SI7021_SDA_LOW();
+  45   1        delay_x_us();
+  46   1        SI7021_SCL_HIGH();
+  47   1        delay_x_us();
+  48   1        SI7021_SDA_HIGH();
+  49   1        delay_x_us();
+  50   1      }
+  51          
+  52          //????: send_1byte
+  53          //????: ??????si7021??
+  54          //????:
+C51 COMPILER V9.54   SI7021                                                                06/03/2019 10:28:39 PAGE 2   
+
+  55          // ? ? ?:
+  56          BOOLEAN send_1byte (u8 send_data)
+  57          {
+  58   1        u8 bit_cnt;
+  59   1        BOOLEAN  b_ack=0;
+  60   1        u8 i=200;
+  61   1        u8 j;
+  62   1        
+  63   1        for(bit_cnt=0; bit_cnt<8; bit_cnt++)
+  64   1        {
+  65   2             SI7021_SCL_LOW();
+  66   2             if ((send_data << bit_cnt) & 0x80) {
+  67   3             SI7021_SDA_HIGH();
+  68   3             } else {
+  69   3            SI7021_SDA_LOW();
+  70   3           }
+  71   2           delay_x_us();              
+  72   2             SI7021_SCL_HIGH();       
+  73   2             delay_x_us();           
+  74   2        }
+  75   1      
+  76   1        delay_x_us();
+  77   1        SI7021_SCL_LOW();
+  78   1        SI7021_SDA_HIGH();
+  79   1        delay_x_us();
+  80   1        
+  81   1        delay_x_us();
+  82   1        SI7021_SCL_HIGH();
+  83   1        delay_x_us();
+  84   1        
+  85   1        SI7021_SDAIN();
+  86   1        i = 200;
+  87   1        while (i--)
+  88   1        {
+  89   2          delay_x_us();
+  90   2          j = SI7021_SDA_PORT;
+  91   2          if ((j & SI7021_SDA_NUMBER) == 0x00) {
+  92   3            b_ack = 1;
+  93   3            break;
+  94   3          }
+  95   2        }
+  96   1        SI7021_SDAOUT();
+  97   1      
+  98   1        if (i == 0) b_ack = 0; 
+  99   1        
+ 100   1        SI7021_SCL_LOW();
+ 101   1        delay_x_us ();
+ 102   1        
+ 103   1        return b_ack;
+ 104   1      }
+ 105          
+ 106          //????: read_1byte
+ 107          //????: ?si7021??????
+ 108          //????:
+ 109          // ? ? ?:
+ 110          //
+ 111          u8 read_1byte(void)
+ 112          {
+ 113   1        u8 read_value=0;
+ 114   1        u8 bit_cnt;
+ 115   1        u8 j;
+ 116   1      
+C51 COMPILER V9.54   SI7021                                                                06/03/2019 10:28:39 PAGE 3   
+
+ 117   1        SI7021_SDAIN();
+ 118   1        for (bit_cnt=0; bit_cnt<8; bit_cnt++)
+ 119   1        {
+ 120   2             SI7021_SCL_HIGH();
+ 121   2             delay_x_us();
+ 122   2           read_value <<= 1;
+ 123   2           j = SI7021_SDA_PORT;
+ 124   2             if (j & SI7021_SDA_NUMBER) {
+ 125   3             read_value +=1;
+ 126   3           }
+ 127   2             SI7021_SCL_LOW();
+ 128   2        }
+ 129   1        SI7021_SDAOUT();
+ 130   1        
+ 131   1        return (read_value);
+ 132   1      }
+ 133          
+ 134          //????:master_i2c_ack
+ 135          //????:MCU?????
+ 136          //????:
+ 137          // ? ? ?:
+ 138          void master_i2c_ack (void)
+ 139          {
+ 140   1        SI7021_SDA_LOW();
+ 141   1        delay_x_us();
+ 142   1        SI7021_SCL_LOW();
+ 143   1        delay_x_us();      
+ 144   1        SI7021_SCL_HIGH();
+ 145   1        delay_x_us();
+ 146   1        SI7021_SCL_LOW();    
+ 147   1        delay_x_us(); 
+ 148   1        SI7021_SDA_HIGH();
+ 149   1        delay_x_us();
+ 150   1      }
+ 151          //????:master_i2c_noack
+ 152          //????:MCU???????????
+ 153          //????:
+ 154          // ? ? ?:
+ 155          void master_i2c_noack (void)
+ 156          {
+ 157   1        SI7021_SDA_HIGH(); 
+ 158   1        delay_x_us();      
+ 159   1        SI7021_SCL_HIGH();
+ 160   1        delay_x_us();
+ 161   1        SI7021_SCL_LOW(); 
+ 162   1      }
+ 163          //????:measure_si7021
+ 164          //????:HOLD MASTER???????? 
+ 165          //????:
+ 166          // ? ? ?:
+ 167          void measure_si7021 (u8 model,union16 *value )
+ 168          {
+ 169   1        //u16 i;
+ 170   1        u16 tmp;
+ 171   1        FP32 buff;
+ 172   1        //u32 buf;
+ 173   1        u8 crc8;
+ 174   1        
+ 175   1        //?????
+ 176   1        start_i2c();               
+ 177   1        if (0 == send_1byte(SALVE_ADDR))//?slave addr
+ 178   1        {
+C51 COMPILER V9.54   SI7021                                                                06/03/2019 10:28:39 PAGE 4   
+
+ 179   2          value->uint = 0xAABB;
+ 180   2          return;
+ 181   2        }
+ 182   1      
+ 183   1        if (0 == send_1byte(model))//measure cmd
+ 184   1        {
+ 185   2          value->uint = 0x1234;
+ 186   2          return;
+ 187   2        }
+ 188   1        //?????????10~12ms ?? 6~10ms  
+ 189   1        //i = 600;  //600*180=108ms  ?????
+ 190   1        //while (i--) {
+ 191   1        //  delay_x_us();  //???????????(??????,??????)
+ 192   1        //}
+ 193   1        DelayMs(100);
+ 194   1        
+ 195   1        start_i2c();         //???????
+ 196   1        if (0==send_1byte(SALVE_ADDR+1)) //???
+ 197   1        {
+ 198   2          value->uint = 0x3456;
+ 199   2          return;
+ 200   2        }
+ 201   1      
+ 202   1        value->uchar[HSB] = read_1byte();//??????????
+ 203   1        //mcu??
+ 204   1        master_i2c_ack();
+ 205   1        value->uchar[LSB] = read_1byte();//????????????
+ 206   1        //mcu???
+ 207   1        master_i2c_ack();
+ 208   1        crc8 = read_1byte();
+ 209   1        master_i2c_noack();
+ 210   1        
+ 211   1        //mcu??->read_1byte()?????->mcu??
+ 212   1      
+ 213   1        //?????
+ 214   1      //  value->uint = 0x7890;
+ 215   1        stop_i2c();
+ 216   1        
+ 217   1        tmp = (value->uchar[HSB] << 8) | value->uchar[LSB];
+ 218   1        if (model != TEMP_HOLD_MASTER) {
+ 219   2          buff = tmp*125.0;
+ 220   2          buff = buff/65536-6;
+ 221   2          humi = buff*100;
+ 222   2          _nop_();
+ 223   2        } else {
+ 224   2          buff = tmp*175.72;
+ 225   2          buff = buff/65536-46.85;
+ 226   2          temp = buff*100;
+ 227   2          _nop_();
+ 228   2        }
+ 229   1      }
+ 230          
+ 231          
+ 232          
+ 233          
+ 234          
+ 235          
+ 236          
+ 237          
+ 238          
+ 239          
+ 240          
+C51 COMPILER V9.54   SI7021                                                                06/03/2019 10:28:39 PAGE 5   
+
+ 241          
+ 242          
+ 243          
+ 244          
+ 245          
+ 246          
+ 247          
+ 248          
+ 249          
+ 250          
+ 251          
+ 252          
+ 253          
+ 254          
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    498    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =      9      11
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----       1
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)
