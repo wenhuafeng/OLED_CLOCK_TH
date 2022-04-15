@@ -7,7 +7,7 @@
 
   <Targets>
     <Target>
-      <TargetName>OLED</TargetName>
+      <TargetName>code</TargetName>
       <ToolsetNumber>0x0</ToolsetNumber>
       <ToolsetName>MCS-51</ToolsetName>
       <uAC6>0</uAC6>
@@ -362,17 +362,22 @@
       </TargetOption>
       <Groups>
         <Group>
-          <GroupName>Source Group 1</GroupName>
+          <GroupName>usr</GroupName>
           <Files>
             <File>
-              <FileName>includes.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>.\code\includes.h</FilePath>
+              <FileName>display.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\code\display.c</FilePath>
             </File>
             <File>
-              <FileName>startup.a51</FileName>
-              <FileType>2</FileType>
-              <FilePath>.\code\startup.a51</FilePath>
+              <FileName>gp_sub.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\code\gp_sub.c</FilePath>
+            </File>
+            <File>
+              <FileName>key_func.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\code\key_func.c</FilePath>
             </File>
             <File>
               <FileName>main.c</FileName>
@@ -380,44 +385,24 @@
               <FilePath>.\code\main.c</FilePath>
             </File>
             <File>
-              <FileName>RTC.c</FileName>
+              <FileName>oled_12832.c</FileName>
               <FileType>1</FileType>
-              <FilePath>.\code\RTC.c</FilePath>
+              <FilePath>.\code\oled_12832.c</FilePath>
             </File>
             <File>
-              <FileName>GP_SUB.C</FileName>
+              <FileName>rtc.c</FileName>
               <FileType>1</FileType>
-              <FilePath>.\code\GP_SUB.C</FilePath>
+              <FilePath>.\code\rtc.c</FilePath>
             </File>
             <File>
-              <FileName>Key_Func.c</FileName>
+              <FileName>si7021.c</FileName>
               <FileType>1</FileType>
-              <FilePath>.\code\Key_Func.c</FilePath>
+              <FilePath>.\code\si7021.c</FilePath>
             </File>
             <File>
-              <FileName>Display.c</FileName>
+              <FileName>table.c</FileName>
               <FileType>1</FileType>
-              <FilePath>.\code\Display.c</FilePath>
-            </File>
-            <File>
-              <FileName>Si7021.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\code\Si7021.c</FilePath>
-            </File>
-          </Files>
-        </Group>
-        <Group>
-          <GroupName>New Group</GroupName>
-          <Files>
-            <File>
-              <FileName>Table.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\code\Table.c</FilePath>
-            </File>
-            <File>
-              <FileName>OLED12832.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\code\OLED12832.c</FilePath>
+              <FilePath>.\code\table.c</FilePath>
             </File>
           </Files>
         </Group>
