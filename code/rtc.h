@@ -1,72 +1,80 @@
 #ifndef RTC_H
 #define RTC_H
 
-typedef struct {
-    INT8U sec;
-    INT8U min;
-    INT8U hour;
-    INT8U day;
-    INT8U week;
-    INT8U month;
-    INT16U year;
-} rtc_counter_value_t;
+#include "func_def.h"
 
-OS_EXT BOOLEAN F_500MS;
-OS_EXT BOOLEAN F_500MS_1;
-OS_EXT BOOLEAN F_SET_COL;
-OS_EXT BOOLEAN flag_250ms_on;
-OS_EXT BOOLEAN flag_500ms_on;
-OS_EXT BOOLEAN flag_1000ms_on;
-OS_EXT BOOLEAN flag_1min_on;
-OS_EXT BOOLEAN Time_format; //=0,24HR. =1,12HR.
-OS_EXT BOOLEAN flag_DM_MD;  //=0,DM. =1,MD.
-
-OS_EXT INT8U MinCtr;
-OS_EXT BOOLEAN F_1MIN;
-
-extern rtc_counter_value_t TIME;
-extern BOOLEAN flag_500ms_on;
-extern BOOLEAN flag_1000ms_on;
-extern BOOLEAN flag_250ms_on;
-extern BOOLEAN flag_1min_on;
-extern BOOLEAN Time_format;
-extern BOOLEAN flag_DM_MD;
-
-enum {
-    _24HR,
-    _12HR,
+struct TimeType {
+    uint8_t sec;
+    uint8_t min;
+    uint8_t hour;
+    uint8_t day;
+    uint8_t week;
+    uint8_t month;
+    uint16_t year;
 };
-OS_EXT BOOLEAN F_HR; //= 1 is 12HR,= 0 is 24HR.
 
-enum {
-    _AM,
-    _PM,
+#define SET_500MS_FLAG  (1 << 0)
+#define SET_1000MS_FLAG (1 << 1)
+#define SET_COL_FLAG    (1 << 2)
+#define SET_HR_FLAG     (1 << 3)
+#define SET_MD_FLAG     (1 << 4)
+#define SET_PD_FLAG     (1 << 5)
+
+union TimeFlag {
+    struct {
+        uint8_t flag500ms : 1;
+        uint8_t flag1000ms : 1;
+        uint8_t flagSetCol : 1;
+        uint8_t flag24Hr12Hr : 1;
+        uint8_t flagDmMd : 1;
+        uint8_t flagAmPm : 1;
+    } flag;
+    uint8_t flags;
 };
-OS_EXT BOOLEAN F_AM_PM;
 
-void RTC_Init();
-void TimeInit();
-INT8U TimeFormat(INT8U hour);
-void Time_Deal();
-void Date_Deal();
-INT8U Date_Day(INT16U Year, INT8U Month);
-void Week_Deal(INT16U Year, INT8U Month, INT8U Day);
+void SetTimeFlag(uint8_t flags);
+BOOLEAN GetTimeFlag(uint8_t flags);
+void ToggleTimeFlag(uint8_t flags);
+void ResetTimeFlag(uint8_t flags);
 
-void MIN_INC(void);
-void MIN_DEC(void);
-void HOUR_INC(void);
-void HOUR_DEC(void);
-void DAY_INC(void);
-void DAY_DEC(void);
-void MONTH_INC(void);
-void MONTH_DEC(void);
-void YEAR_INC(void);
-void YEAR_DEC(void);
+//OS_EXT BOOLEAN F_500MS;
+//OS_EXT BOOLEAN F_SET_COL;
+//OS_EXT BOOLEAN flag_1000ms_on;
+//OS_EXT BOOLEAN flag_1min_on;
+//OS_EXT BOOLEAN Time_format; //=0,24HR. =1,12HR.
+//OS_EXT BOOLEAN flag_DM_MD;  //=0,DM. =1,MD.
 
-BOOLEAN MIN_SET(BOOLEAN flag);
-BOOLEAN HOUR_SET(BOOLEAN flag);
-BOOLEAN DAY_SET(BOOLEAN flag);
-BOOLEAN MONTH_SET(BOOLEAN flag);
-BOOLEAN YEAR_SET(BOOLEAN flag);
+//OS_EXT uint8_t MinCtr;
+//OS_EXT BOOLEAN F_1MIN;
+//
+//enum {
+//    _24HR,
+//    _12HR,
+//};
+//OS_EXT BOOLEAN F_HR; //= 1 is 12HR,= 0 is 24HR.
+//
+//enum {
+//    _AM,
+//    _PM,
+//};
+//OS_EXT BOOLEAN F_AM_PM;
+
+struct TimeType *GetTime(void);
+void TimeInit(void);
+uint8_t TimeFormat(uint8_t hour);
+BOOLEAN ClockRun(void);
+uint8_t GetMaxDay(uint16_t Year, uint8_t Month);
+void CalculateWeek(void);
+
+void IncMin(void);
+void DecMin(void);
+void IncHour(void);
+void DecHour(void);
+void IncDay(void);
+void DecDay(void);
+void IncMonth(void);
+void DecMonth(void);
+void IncYear(void);
+void DecYear(void);
 
 #endif

@@ -1,48 +1,27 @@
-#ifndef OS_MASTER_FILE
-#define OS_GLOBALS
-#include "includes.h"
+#include "gp_sub.h"
+#include "func_def.h"
+
+#if defined(HEX_TO_DEC) && HEX_TO_DEC
+static uint8_t g_dec[4];
 #endif
 
-#ifdef _HEX2DEC
-INT8U DEC[4]; //dec2hex use.
-#endif
-
-#ifdef _DEC2HEX
-INT8U HEX; //hex2dec use.
-#endif
-
-/********************************************************************/ /**
- * @brief:      hex to asc Function subprogram
- *
- *
- * @param[in]:  NONE
- *
- * @return:     NONE
- *********************************************************************/
-#ifdef _HEX_TO_ASC_
-INT8U HexToAsc(INT8U aHex)
+#if defined(HEX_TO_ASC) && HEX_TO_ASC
+uint8_t HexToAsc(uint8_t hex)
 {
-    if ((aHex >= 0) && (aHex <= 9))
-        aHex += 0x30;
-    else if ((aHex >= 10) && (aHex <= 15))
-        aHex += 0x37;
-    else
-        aHex = 0xff;
+    if ((hex >= 0) && (hex <= 9)) {
+        hex += 0x30;
+    } else if ((hex >= 10) && (hex <= 15)) {
+        hex += 0x37;
+    } else {
+        hex = 0xff;
+    }
 
-    return aHex;
+    return hex;
 }
 #endif
 
-/********************************************************************/ /**
- * @brief:      asc to hex Function subprogram
- *
- *
- * @param[in]:  NONE
- *
- * @return:     NONE
- *********************************************************************/
-#ifdef _ASC_TO_HEX_
-INT8U AscToHex(INT8U aChar)
+#if defined(ASC_TO_HEX) && ASC_TO_HEX
+uint8_t AscToHex(uint8_t asc)
 {
     if ((aChar >= 0x30) && (aChar <= 0x39))
         aChar -= 0x30;
@@ -57,69 +36,38 @@ INT8U AscToHex(INT8U aChar)
 }
 #endif
 
-/********************************************************************/ /**
- * @brief:      delay US Function subprogram
- *
- *
- * @param[in]:  NONE
- *
- * @return:     NONE
- *********************************************************************/
-#ifdef _DELAY_US
-
-void DelayUs(INT16U count)
+#if defined(DELAY_US) && DELAY_US
+void DelayUs(uint16_t count)
 {
-    //INT8U bak = count;
-
     while (count--)
         ;
-    //while(bak--);
 }
-
 #endif
 
-/********************************************************************/ /**
- * @brief:      DELAY MS
-
- * @param[in]:    NONE
- *
- * @return:     NONE
- *********************************************************************/
-#ifdef _DELAY_MS
-
-void DelayMs(INT16U t) //用示波器调过，（8MHZ）
+#if defined(DELAY_MS) && DELAY_MS
+void DelayMs(uint16_t count) // 用示波器调过
 {
     /*
-  //8M
-  INT8U i,j;
-  for(; t > 0; t--)
-  for(j = 21; j > 0; j--)
-  for(i = 90; i > 0; i--);
+    //8M
+    uint8_t i,j;
+    for(; count > 0; count--)
+    for(j = 21; j > 0; j--)
+    for(i = 90; i > 0; i--);
     */
 
     //16M
-    INT8U i, j;
-    for (; t > 0; t--)
+    uint8_t i, j;
+    for (; count > 0; count--)
         for (j = 20; j > 0; j--)
             for (i = 199; i > 0; i--)
                 ;
 }
-
 #endif
 
-/********************************************************************/ /**
- * @brief:      24HR to 12HR Function subprogram
- *
- *
- * @param[in]:  NONE
- *
- * @return:     12HR
- *********************************************************************/
-#ifdef _C24HR_TO_12HR
-
-INT8U C24HR_TO_12HR(INT8U hr)
+#if defined(C24HR_TO_12HR) && C24HR_TO_12HR
+uint8_t Hour24hrTo12hr(uint8_t hr)
 {
-    INT8U val;
+    uint8_t val;
 
     if (hr <= 11) {
         F_AM_PM = _AM;
@@ -139,41 +87,20 @@ INT8U C24HR_TO_12HR(INT8U hr)
 
     return val;
 }
-
 #endif
 
-/********************************************************************/ /**
- * @brief:      C to F Function subprogram
- *
- *
- * @param[in]:    NONE
- *
- * @return:     F
- *********************************************************************/
-#ifdef _C2F
-
-INT16S C2F(INT16S temp)
+#if defined(C2F) && C2F
+int16_t CelsiusToFahrenheit(int16_t c)
 {
-    return (temp * 18 + 320);
+    return (c * 18 + 320);
 }
-
 #endif
 
-/********************************************************************/ /**
- * @brief:      C to F Function subprogram
- *
- *
- * @param[in]:    NONE
- *
- * @return:     F
- *********************************************************************/
-#ifdef _F2C
-
-INT16S F2C(INT16S temp)
+#if defined(F2C) && F2C
+int16_t F2C(int16_t temp)
 {
     return ((temp - 320) / 18);
 }
-
 #endif
 
 /********************************************************************/ /**
@@ -186,105 +113,73 @@ INT16S F2C(INT16S temp)
  *
  * @return:     WEEK(0=Sunday,1=Monday,...,6=Saturday)
  *********************************************************************/
-#ifdef _CALC_WEEK
-
-//week table
-CONST INT8U WEEK_TAB_ADDR[13] = { 0x00, 0x00, 0x03, 0x02, 0x05, 0x00, 0x03, 0x05, 0x01, 0x04, 0x06, 0x02, 0x04 };
-
-//calculate week
-void CALC_WEEK(void)
+#if defined(CALC_WEEK) && CALC_WEEK
+void CalcWeek(void)
 {
-    INT16U tmp1, tmp2, tmp3;
+    uint16_t tmp1, tmp2, tmp3;
+    uint8_t weekTable[13] = { 0x00, 0x00, 0x03, 0x02, 0x05, 0x00, 0x03, 0x05, 0x01, 0x04, 0x06, 0x02, 0x04 };
 
-    tmp1 = DEC2HEX(D_YEAR);
-    tmp2 = DEC2HEX(D_MONTH);
-    tmp3 = DEC2HEX(D_DAY);
+    tmp1 = DecToHex(D_YEAR);
+    tmp2 = DecToHex(D_MONTH);
+    tmp3 = DecToHex(D_DAY);
 
-    D_WEEK = (tmp1 + tmp3 + (tmp1 / 4) + WEEK_TAB_ADDR[tmp2] - 1) % 7;
+    D_WEEK = (tmp1 + tmp3 + (tmp1 / 4) + weekTable[tmp2] - 1) % 7;
 }
 
 #endif
-/********************************************************************/ /**
- * @brief:      Pressure HPA->INHG Function subprogram
- *
- *
- * @param[in]:  NONE
- *
- * @return:     DEC[4]
- *********************************************************************/
-#ifdef _HPA2INHG
 
-INT16U HPA2INHG(INT16U i)
+#if defined(HPA_TO_INHG) && HPA_TO_INHG
+uint16_t HpaToInhg(uint16_t hpa)
 {
-    return (i * 2953 / 1000);
+    return (hpa * 2953 / 1000);
 }
-
 #endif
-/********************************************************************/ /**
- * @brief:      HEX TO DEC Function subprogram
- *
- *
- * @param[in]:  Hp(HEX Point)
- *
- * @return:     DEC[4]
- *********************************************************************/
-#ifdef _HEX2DEC
 
-void HEX2DEC(INT16U Hp)
+#if defined(HEX_TO_DEC) && HEX_TO_DEC
+void HexToDec(uint16_t hex)
 {
-    INT16U i;
+    uint16_t i;
 
-    i      = Hp;
-    DEC[0] = 0;
-    DEC[1] = 0;
-    DEC[2] = 0;
-    DEC[3] = 0;
+    i        = hex;
+    g_dec[0] = 0;
+    g_dec[1] = 0;
+    g_dec[2] = 0;
+    g_dec[3] = 0;
 
     while (i >= 1000) {
         i = i - 1000;
-        DEC[3]++;
+        g_dec[3]++;
     }
 
     while (i >= 100) {
         i = i - 100;
-        DEC[2]++;
+        g_dec[2]++;
     }
 
     while (i >= 10) {
         i = i - 10;
-        DEC[1]++;
+        g_dec[1]++;
     }
 
-    DEC[0] = i;
+    g_dec[0] = i;
 }
-
 #endif
 
-/********************************************************************/ /**
- * @brief:      DEC TO Hex Function subprogram
- *
- *
- * @param[in]:  HEX
- *
- * @return:     HEX
- *********************************************************************/
-#ifdef _DEC2HEX
-
-INT8U DEC2HEX(INT8U HEX_1)
+#if defined(DEC_TO_HEX) && DEC_TO_HEX
+uint8_t DecToHex(uint8_t dec)
 {
-    INT8U i;
+    uint8_t i;
 
-    i = HEX_1 & 0xf0;
+    i = dec & 0xf0;
     i = i >> 4;
 
-    HEX_1 = HEX_1 & 0x0f;
+    dec = dec & 0x0f;
 
     while (i != 0) {
         i--;
-        HEX_1 = HEX_1 + 0x0a;
+        dec = dec + 0x0a;
     }
 
-    return HEX_1;
+    return dec;
 }
-
 #endif

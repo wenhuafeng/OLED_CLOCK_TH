@@ -1,189 +1,249 @@
-#ifndef OS_MASTER_FILE
-#define OS_GLOBALS
-#include "includes.h"
-#endif
+#include "rtc.h"
+#include "func_def.h"
 
-rtc_counter_value_t TIME;
+static union TimeFlag g_timeFlag;
+static struct TimeType g_time;
+
+void SetTimeFlag(uint8_t flags)
+{
+    union TimeFlag *timeFlag = &g_timeFlag;
+
+    timeFlag->flags |= flags;
+}
+
+BOOLEAN GetTimeFlag(uint8_t flags)
+{
+    BOOLEAN ret;
+    union TimeFlag *timeFlag = &g_timeFlag;
+
+    if ((timeFlag->flags & flags) == 0) {
+        ret = false;
+    } else {
+        ret = true;
+    }
+
+    return ret;
+}
+
+void ToggleTimeFlag(uint8_t flags)
+{
+    union TimeFlag *timeFlag = &g_timeFlag;
+
+    timeFlag->flags ^= flags;
+}
+
+void ResetTimeFlag(uint8_t flags)
+{
+    union TimeFlag *timeFlag = &g_timeFlag;
+
+    timeFlag->flags &= ~flags;
+}
+
+static uint8_t GetMaxDay(uint16_t year, uint8_t month)
+{
+    uint8_t day;
+    uint8_t daysTable[] = { 0, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 };
+
+    if (month == 2) {
+        if (((year % 4 == 0) && (year % 100 != 0)) || (year % 400 == 0)) {
+            day = 29;
+        } else {
+            day = 28;
+        }
+    } else {
+        day = daysTable[month];
+    }
+
+    return day;
+}
+
+struct TimeType *GetTime(void)
+{
+    return &g_time;
+}
 
 void TimeInit(void)
 {
-    TIME.year  = 2017;
-    TIME.month = 7;
-    TIME.day   = 8;
-    Week_Deal(TIME.year, TIME.month, TIME.day);
-    TIME.hour = 10;
-    TIME.min  = 0;
-    TIME.sec  = 0;
+    struct TimeType *time = &g_time;
+
+    time->year  = 2022;
+    time->month = 1;
+    time->day   = 1;
+    time->hour = 8;
+    time->min  = 0;
+    time->sec  = 0;
+    CalculateWeek();
 }
 
-void Time_Deal(void)
+BOOLEAN ClockRun(void)
 {
-    TIME.sec++;
-    if (TIME.sec == 60) {
-        flag_1min_on = 1;
-        TIME.sec     = 0;
-        TIME.min++;
-        if (TIME.min == 60) {
-            TIME.min = 0;
-            TIME.hour++;
-            if (TIME.hour > 23) {
-                TIME.hour = 0;
-                TIME.day++;
-                if (TIME.day > Date_Day(TIME.year, TIME.month)) {
-                    TIME.day = 1;
-                    TIME.month++;
-                    if (TIME.month > 12) {
-                        TIME.month = 1;
-                        TIME.year++;
-                    }
-                }
-                Week_Deal(TIME.year, TIME.month, TIME.day);
-            }
-        }
+    struct TimeType *time = &g_time;
+
+    time->sec++;
+    if (time->sec < 60) {
+        return false;
     }
+
+    time->sec = 0;
+    time->min++;
+    if (time->min < 60) {
+        return false;
+    }
+
+    time->min = 0;
+    time->hour++;
+    if (time->hour < 24) {
+        return false;
+    }
+
+    time->hour = 0;
+    time->day++;
+    if (time->day <= GetMaxDay(time->year, time->month)) {
+        goto calc_week;
+    }
+
+    time->day = 1;
+    time->month++;
+    if (time->month < 13) {
+        goto calc_week;
+    }
+
+    time->month = 1;
+    time->year++;
+
+calc_week:
+    CalculateWeek();
+
+    return true;
 }
 
-INT8U Date_Day(INT16U Year, INT8U Month)
+void CalculateWeek(void)
 {
-    INT8U day_temp;
-    INT8U const_days[] = { 0, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 };
+    int16_t yearTemp = 0;
+    int16_t yearHigh;
+    int16_t yearLow;
+    int8_t monthTemp = 0;
+    int8_t wk;
+    struct TimeType *time = &g_time;
 
-    if (Month == 2) {
-        if (((Year % 4 == 0) && (Year % 100 != 0)) || (Year % 400 == 0)) {
-            day_temp = 29;
-        } else {
-            day_temp = 28;
-        }
+    if (time->month < 3) {
+        monthTemp = time->month + 12;
+        yearTemp  = time->year - 1;
     } else {
-        day_temp = const_days[Month];
+        monthTemp = time->month;
+        yearTemp  = time->year;
     }
 
-    return day_temp;
+    yearHigh = yearTemp / 100;
+    yearLow  = yearTemp % 100;
+
+    wk = yearLow + (yearLow / 4) + (yearHigh / 4);
+    wk = wk - (2 * yearHigh) + (26 * (monthTemp + 1) / 10) + time->day - 1;
+    wk = (wk + 140) % 7;
+
+    time->week = wk;
 }
 
-void Week_Deal(INT16U Year, INT8U Month, INT8U Day)
+void IncMin(void)
 {
-    INT16S temp_year = 0;
-    INT8S temp_cen   = 0;
-    INT8S temp_month = 0;
-    INT8S week_data;
-
-    if (Month < 3) {
-        temp_month = Month + 12;
-        temp_year  = Year - 1;
-    } else {
-        temp_month = Month;
-        temp_year  = Year;
-    }
-
-    temp_cen  = temp_year / 100;
-    temp_year = temp_year % 100;
-
-    week_data = temp_year + temp_year / 4 + temp_cen / 4;
-    week_data = week_data - 2 * temp_cen + 26 * (temp_month + 1) / 10 + Day - 1;
-    TIME.week = (week_data + 140) % 7;
-}
-
-void MIN_INC(void)
-{
-    TIME.sec = 0x00;
-    if (++TIME.min >= 60) {
-        TIME.min = 0;
+    g_time.sec = 0x00;
+    if (++g_time.min >= 60) {
+        g_time.min = 0;
     }
 }
 
-void MIN_DEC(void)
+void DecMin(void)
 {
-    TIME.sec = 0x00;
-    if (--TIME.min == 0xff) {
-        TIME.min = 59;
+    g_time.sec = 0x00;
+    if (--g_time.min == 0xff) {
+        g_time.min = 59;
     }
 }
 
-void HOUR_INC(void)
+void IncHour(void)
 {
-    if (++TIME.hour >= 24) {
-        TIME.hour = 0;
+    if (++g_time.hour >= 24) {
+        g_time.hour = 0;
     }
 }
 
-void HOUR_DEC(void)
+void DecHour(void)
 {
-    if (--TIME.hour == 0xff) {
-        TIME.hour = 23;
+    if (--g_time.hour == 0xff) {
+        g_time.hour = 23;
     }
 }
 
-void DAY_INC(void)
+void IncDay(void)
 {
-    if (++TIME.day > Date_Day(TIME.year, TIME.month)) {
-        TIME.day = 1;
+    if (++g_time.day > GetMaxDay(g_time.year, g_time.month)) {
+        g_time.day = 1;
     }
 }
 
-void DAY_DEC(void)
+void DecDay(void)
 {
-    if (--TIME.day == 0) {
-        TIME.day = Date_Day(TIME.year, TIME.month);
+    if (--g_time.day == 0) {
+        g_time.day = GetMaxDay(g_time.year, g_time.month);
     }
 }
 
-void MONTH_INC(void)
+void IncMonth(void)
 {
-    INT8U MaxDay;
+    uint8_t MaxDay;
 
-    if (++TIME.month >= 13) {
-        TIME.month = 1;
+    if (++g_time.month >= 13) {
+        g_time.month = 1;
     }
 
     //update Max day
-    MaxDay = Date_Day(TIME.year, TIME.month);
-    if (TIME.day >= MaxDay) {
-        TIME.day = MaxDay;
+    MaxDay = GetMaxDay(g_time.year, g_time.month);
+    if (g_time.day >= MaxDay) {
+        g_time.day = MaxDay;
     }
 }
 
-void MONTH_DEC(void)
+void DecMonth(void)
 {
-    INT8U MaxDay;
+    uint8_t MaxDay;
 
-    if (--TIME.month == 0) {
-        TIME.month = 12;
+    if (--g_time.month == 0) {
+        g_time.month = 12;
     }
 
     //update Max day
-    MaxDay = Date_Day(TIME.year, TIME.month);
-    if (TIME.day >= MaxDay) {
-        TIME.day = MaxDay;
+    MaxDay = GetMaxDay(g_time.year, g_time.month);
+    if (g_time.day >= MaxDay) {
+        g_time.day = MaxDay;
     }
 }
 
-void YEAR_INC(void)
+void IncYear(void)
 {
-    INT8U MaxDay;
+    uint8_t MaxDay;
 
-    if (++TIME.year > 2099) {
-        TIME.year = 2000;
+    if (++g_time.year > 2099) {
+        g_time.year = 2000;
     }
 
     //update Max day
-    MaxDay = Date_Day(TIME.year, TIME.month);
-    if (TIME.day >= MaxDay) {
-        TIME.day = MaxDay;
+    MaxDay = GetMaxDay(g_time.year, g_time.month);
+    if (g_time.day >= MaxDay) {
+        g_time.day = MaxDay;
     }
 }
 
-void YEAR_DEC(void)
+void DecYear(void)
 {
-    INT8U MaxDay;
+    uint8_t MaxDay;
 
-    if (--TIME.year == 1999) {
-        TIME.year = 2099;
+    if (--g_time.year == 1999) {
+        g_time.year = 2099;
     }
 
     //update Max day
-    MaxDay = Date_Day(TIME.year, TIME.month);
-    if (TIME.day >= MaxDay) {
-        TIME.day = MaxDay;
+    MaxDay = GetMaxDay(g_time.year, g_time.month);
+    if (g_time.day >= MaxDay) {
+        g_time.day = MaxDay;
     }
 }

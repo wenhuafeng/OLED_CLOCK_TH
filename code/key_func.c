@@ -1,83 +1,170 @@
-#ifndef OS_MASTER_FILE
-#define OS_GLOBALS
-#include "includes.h"
-#endif
+#include "key_func.h"
+#include "func_def.h"
+#include "MC96F6432.h"
+#include "gp_sub.h"
+#include "rtc.h"
+#include "common.h"
+#include "main_sub.h"
+
+#define KEY_PORT P0
+
+#define ALL_KEY_MASK 0x38
+#define KEY1_MASK    0x30
+#define KEY2_MASK    0x28
+#define KEY3_MASK    0x18
+
+enum {
+    NO_KEY,
+    UP_KEY,
+    DOWN_KEY,
+    MODE_KEY,
+    MAX_KEY,
+};
+
+enum {
+    KEY0,
+    KEY1 = DOWN_KEY,
+    KEY2 = UP_KEY,
+    KEY3 = MODE_KEY,
+};
+
+#define SET_MODE_TIME (10 * 2) // 10S
+#define KEY_HOLD_TIME 2
+
+static struct KeyType g_key;
+static enum SetItemType g_setItem;
+static uint8_t g_setModeCtr;
+static uint8_t g_holdKeyCtr;
+
+void IncHoldKeyCtr(void)
+{
+    g_holdKeyCtr++;
+}
+
+void SetKeyFlag(uint8_t keyFlag)
+{
+    struct KeyType *type = &g_key;
+
+    type->keyFlag.flags |= keyFlag;
+}
+
+BOOLEAN GetKeyFlag(uint8_t flags)
+{
+    BOOLEAN ret;
+    struct KeyType *type = &g_key;
+
+    if ((type->keyFlag.flags & flags) == 0) {
+        ret = false;
+    } else {
+        ret = true;
+    }
+
+    return ret;
+}
+
+void ResetKeyFlag(uint8_t flags)
+{
+    struct KeyType *type = &g_key;
+
+    type->keyFlag.flags &= ~flags;
+}
+
+void SetItem(enum SetItemType item)
+{
+    g_setItem = item;
+}
+
+enum SetItemType GetItem(void)
+{
+    return g_setItem;
+}
+
+uint8_t GetSetModeCtr(void)
+{
+    return g_setModeCtr;
+}
+
+void SetModeCountDec(void)
+{
+    if (g_setModeCtr) {
+        g_setModeCtr--;
+        if (g_setModeCtr == 0x00) {
+            SetItem(NORMAL_MODE);
+        }
+    }
+}
 
 void ScanKey(void)
 {
-    INT8U i, j;
+    uint8_t i, j;
+    struct KeyType *type = &g_key;
 
-    Key = _NO_KEY_;
+    type->key = NO_KEY;
 
-    i = (KeyPort & _ALL_KEY_MASK_);
-    if (i == _ALL_KEY_MASK_) {
-        F_PushKey = 0;
-        F_NewKey  = 0;
-        F_HoldKey = 0;
-        F_TwoKey  = 0;
-        //TEST
-        //P10 = 0;
+    i = (KEY_PORT & ALL_KEY_MASK);
+    if (i == ALL_KEY_MASK) {
+        type->keyFlag.flag.pushKey = 0;
+        type->keyFlag.flag.newKey  = 0;
+        type->keyFlag.flag.holdKey = 0;
+        type->keyFlag.flag.twoKey  = 0;
         goto normal_quit_scan_key;
     }
 
     DelayMs(2);
 
-    j = (KeyPort & _ALL_KEY_MASK_);
-    if ((j == _ALL_KEY_MASK_) || (i != j)) {
-        //F_PushKey = 0;
-        F_NewKey  = 0;
-        F_HoldKey = 0;
-        F_TwoKey  = 0;
+    j = (KEY_PORT & ALL_KEY_MASK);
+    if ((j == ALL_KEY_MASK) || (i != j)) {
+        type->keyFlag.flag.newKey  = 0;
+        type->keyFlag.flag.holdKey = 0;
+        type->keyFlag.flag.twoKey  = 0;
         goto normal_quit_scan_key;
     }
 
-    Dis_Key_Int();
-    i = (KeyPort & _ALL_KEY_MASK_);
+    DISABLE_KEY_INT();
+    i = (KEY_PORT & ALL_KEY_MASK);
     switch (i) {
-        case _01_KEY_MASK_:
-            Key = _01_KEY_;
+        case KEY1_MASK:
+            type->key = KEY1;
             break;
-        case _02_KEY_MASK_:
-            Key = _02_KEY_;
+        case KEY2_MASK:
+            type->key = KEY2;
             break;
-        case _03_KEY_MASK_:
-            Key = _03_KEY_;
+        case KEY3_MASK:
+            type->key = KEY3;
             break;
         default:
             break;
     }
 
-    if (Key == _NO_KEY_) {
-        Key = _NO_KEY_;
-        //F_PushKey = 0;
-        F_NewKey  = 0;
-        F_HoldKey = 0;
-        F_TwoKey  = 0;
+    if (type->key == NO_KEY) {
+        type->key                  = NO_KEY;
+        type->keyFlag.flag.newKey  = 0;
+        type->keyFlag.flag.holdKey = 0;
+        type->keyFlag.flag.twoKey  = 0;
         goto normal_quit_scan_key;
     } else {
-        if (F_PushKey == 0) {
-            OldKey    = Key;
-            F_NewKey  = 1;
-            F_PushKey = 1;
-            //TEST
-            //P10 = 1;
+        if (type->keyFlag.flag.pushKey == 0) {
+            type->oldKey               = type->key;
+            type->keyFlag.flag.newKey  = 1;
+            type->keyFlag.flag.pushKey = 1;
         }
     }
 
 normal_quit_scan_key:
-    _nop_();
-    Clr_Key_Int_Flag();
-    En_Key_Int();
+    CLR_KEY_INT_FLAG();
+    ENABLE_KEY_INT();
 }
 
 BOOLEAN HoldKeyCom(void)
 {
-    if (F_NewKey == 1) {
-        HoldKeyCtr = 0;
+    struct KeyType *type = &g_key;
+
+    if (type->keyFlag.flag.newKey == 1) {
+        g_holdKeyCtr = 0;
     } else {
-        if (F_HoldKey == 0) {
-            if (HoldKeyCtr == _HOLD_TIMER_KEY_) {
-                F_HoldKey = 1;
+        if (type->keyFlag.flag.holdKey == 0) {
+            if (g_holdKeyCtr == KEY_HOLD_TIME) {
+                type->keyFlag.flag.holdKey = 1;
                 return 1;
             }
         }
@@ -88,15 +175,15 @@ BOOLEAN HoldKeyCom(void)
 
 BOOLEAN SettingCom(void)
 {
-    if (F_NewKey == 1) {
-        HoldKeyCtr = 0;
-        //KEY_TONE();
+    struct KeyType *type = &g_key;
+
+    if (type->keyFlag.flag.newKey == 1) {
+        g_holdKeyCtr = 0;
         return 1;
     } else {
-        if (F_HoldKey == 0) {
-            if (HoldKeyCtr == _HOLD_TIMER_KEY_) {
-                F_HoldKey = 1;
-                //Timer1_init();
+        if (type->keyFlag.flag.holdKey == 0) {
+            if (g_holdKeyCtr == KEY_HOLD_TIME) {
+                type->keyFlag.flag.holdKey = 1;
                 return 1;
             }
         } else {
@@ -109,88 +196,94 @@ BOOLEAN SettingCom(void)
 
 void PushKeyFunc(void)
 {
-    if (F_NewKey || F_HoldKey) {
-        if (SetItem != _NORMAL_MODE_) {
-            SetModeCtr = _SET_MODE_TIME_;
+    struct KeyType *type = &g_key;
+
+    if ((type->key >= MAX_KEY) && (type->key == NO_KEY)) {
+        return;
+    }
+
+    if (type->keyFlag.flag.newKey || type->keyFlag.flag.holdKey) {
+        if (g_setItem != NORMAL_MODE) {
+            g_setModeCtr = SET_MODE_TIME;
         }
     }
 
-    switch (Key) {
-        case _UP_KEY_:
-            if (SetItem != _NORMAL_MODE_) {
+    switch (type->key) {
+        case UP_KEY:
+            if (g_setItem != NORMAL_MODE) {
                 if (SettingCom() == 1) {
-                    if (F_NewKey == 1) {
-                        switch (SetItem) {
-                            case _CLOCK_SET_HR_:
-                                F_HR = ~F_HR;
+                    if (type->keyFlag.flag.newKey == 1) {
+                        switch (g_setItem) {
+                            case CLOCK_SET_HR:
+                                ToggleTimeFlag(SET_HR_FLAG);
                                 break;
                             default:
                                 break;
                         }
                     }
 
-                    switch (SetItem) {
-                        case _CLOCK_SET_HOUR_:
-                            HOUR_INC();
+                    switch (g_setItem) {
+                        case CLOCK_SET_HOUR:
+                            IncHour();
                             break;
-                        case _CLOCK_SET_MIN_:
-                            MIN_INC();
+                        case CLOCK_SET_MIN:
+                            IncMin();
                             break;
-                        case _CLOCK_SET_YEAR_:
-                            YEAR_INC();
+                        case CLOCK_SET_YEAR:
+                            IncYear();
                             break;
-                        case _CLOCK_SET_MONTH_:
-                            MONTH_INC();
+                        case CLOCK_SET_MONTH:
+                            IncMonth();
                             break;
-                        case _CLOCK_SET_DAY_:
-                            DAY_INC();
+                        case CLOCK_SET_DAY:
+                            IncDay();
                             break;
                         default:
                             break;
                     }
-                    F_SET_COL = 1;
-                    Week_Deal(TIME.year, TIME.month, TIME.day);
+                    SetTimeFlag(SET_COL_FLAG);
+                    CalculateWeek();
                 }
             }
             break;
-        case _DOWN_KEY_:
-            if (SetItem != _NORMAL_MODE_) {
+        case DOWN_KEY:
+            if (g_setItem != NORMAL_MODE) {
                 if (SettingCom() == 1) {
-                    if (F_NewKey == 1) {
-                        switch (SetItem) {
-                            case _CLOCK_SET_HR_:
-                                F_HR = ~F_HR;
+                    if (type->keyFlag.flag.newKey == 1) {
+                        switch (g_setItem) {
+                            case CLOCK_SET_HR:
+                                ToggleTimeFlag(SET_HR_FLAG);
                                 break;
                             default:
                                 break;
                         }
                     }
 
-                    switch (SetItem) {
-                        case _CLOCK_SET_HOUR_:
-                            HOUR_DEC();
+                    switch (g_setItem) {
+                        case CLOCK_SET_HOUR:
+                            DecHour();
                             break;
-                        case _CLOCK_SET_MIN_:
-                            MIN_DEC();
+                        case CLOCK_SET_MIN:
+                            DecMin();
                             break;
-                        case _CLOCK_SET_YEAR_:
-                            YEAR_DEC();
+                        case CLOCK_SET_YEAR:
+                            DecYear();
                             break;
-                        case _CLOCK_SET_MONTH_:
-                            MONTH_DEC();
+                        case CLOCK_SET_MONTH:
+                            DecMonth();
                             break;
-                        case _CLOCK_SET_DAY_:
-                            DAY_DEC();
+                        case CLOCK_SET_DAY:
+                            DecDay();
                             break;
                         default:
                             break;
                     }
-                    F_SET_COL = 1;
-                    Week_Deal(TIME.year, TIME.month, TIME.day);
+                    SetTimeFlag(SET_COL_FLAG);
+                    CalculateWeek();
                 }
             }
             break;
-        case _MODE_KEY_:
+        case MODE_KEY:
             if (HoldKeyCom()) {
             }
             break;
@@ -198,41 +291,47 @@ void PushKeyFunc(void)
             break;
     }
 
-    F_NewKey = 0;
+    type->keyFlag.flag.newKey = 0;
+    SetDisplayTime(DISPLAY_10MIN_TIME);
 }
 
 void ReleKeyFunc(void)
 {
-    INT8U tmp;
+    struct KeyType *type = &g_key;
+    uint8_t key          = type->oldKey;
 
-    tmp    = OldKey;
-    OldKey = 0x00;
+    type->oldKey = 0x00;
+    if ((key >= MAX_KEY) && (key == NO_KEY)) {
+        return;
+    }
 
-    switch (tmp) {
-        case _UP_KEY_:
+    switch (key) {
+        case UP_KEY:
             break;
-        case _DOWN_KEY_:
+        case DOWN_KEY:
             break;
-        case _MODE_KEY_:
+        case MODE_KEY:
             //set clock.
-            if (SetItem != _NORMAL_MODE_) {
-                if ((SetItem & _CLOCK_SET_) != _CLOCK_SET_) {
-                    SetItem = _NORMAL_MODE_;
+            if (g_setItem != NORMAL_MODE) {
+                if ((g_setItem & CLOCK_SET) != CLOCK_SET) {
+                    g_setItem = NORMAL_MODE;
                 } else {
-                    SetModeCtr = _SET_MODE_TIME_;
-                    SetItem++;
-                    if (SetItem > _CLOCK_SET_DAY_) {
-                        SetItem    = _NORMAL_MODE_;
-                        SetModeCtr = 0x00;
+                    g_setModeCtr = SET_MODE_TIME;
+                    g_setItem++;
+                    if (g_setItem > CLOCK_SET_DAY) {
+                        g_setItem    = NORMAL_MODE;
+                        g_setModeCtr = 0x00;
                     }
                 }
             } else {
-                SetItem    = _CLOCK_SET_HOUR_;
-                SetModeCtr = _SET_MODE_TIME_;
+                g_setItem    = CLOCK_SET_HOUR;
+                g_setModeCtr = SET_MODE_TIME;
                 Timer1_init();
             }
             break;
         default:
             break;
     }
+
+    SetDisplayTime(DISPLAY_10MIN_TIME);
 }

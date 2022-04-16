@@ -1,176 +1,267 @@
-#ifndef OS_MASTER_FILE
-#define OS_GLOBALS
-#include "includes.h"
-#endif
+#include <intrins.h>
+#include "MC96F6432.h"
+#include "si7021.h"
+#include "func_def.h"
+#include "gp_sub.h"
+#include "key_func.h"
 
-si7021_value_ST gv_si7021_value;
-s16 temp;
-u16 humi;
+#define I2C_DELAY_TIME 250
 
-void delay_x_us(void)
+#define HSB 0
+#define LSB 1
+
+#define BIT_HIGH 1
+#define BIT_LOW  0
+
+#define WRITE_CMD  0x80
+#define READ_CDM   0x81
+#define SALVE_ADDR 0x80
+
+#define HUMI_HOLD_MASTER 0xE5
+#define TEMP_HOLD_MASTER 0xE3
+
+#define HUMI_NOHOLD_MASTER 0xF5
+#define TEMP_NOHOLD_MASTER 0xF3
+
+#define SI7021_SCL        P11
+#define SI7021_SDA        P10
+#define SI7021_SDA_PORT   P1
+#define SI7021_SDA_NUMBER (1 << 0)
+
+#define SI7021_SDAIN()              \
+    do {                            \
+        P1IO &= ~SI7021_SDA_NUMBER; \
+    } while (0)
+#define SI7021_SDAOUT()            \
+    do {                           \
+        P1IO |= SI7021_SDA_NUMBER; \
+    } while (0)
+
+#define SI7021_SCL_HIGH()      \
+    do {                       \
+        SI7021_SCL = BIT_HIGH; \
+    } while (0)
+#define SI7021_SCL_LOW()      \
+    do {                      \
+        SI7021_SCL = BIT_LOW; \
+    } while (0)
+
+#define SI7021_SDA_HIGH()      \
+    do {                       \
+        SI7021_SDA = BIT_HIGH; \
+    } while (0)
+#define SI7021_SDA_LOW()      \
+    do {                      \
+        SI7021_SDA = BIT_LOW; \
+    } while (0)
+
+union union16 {
+    unsigned int uint;
+    unsigned char uchar[2];
+};
+
+union union32 {
+    long _long;
+    unsigned int uint[2];
+    unsigned char uchar[4];
+};
+
+struct Si7021Type {
+    int16_t temp;
+    uint16_t humi;
+    uint8_t crc;
+};
+static struct Si7021Type g_si7021;
+
+static void I2C_DelayUs(uint8_t delay)
 {
-    u8 x = 250;
-    for (; x > 0; x--) {
+    while (delay-- != 0) {
         _nop_();
     }
 }
 
-void start_i2c(void)
+static void I2C_Start(void)
 {
     SI7021_SDA_HIGH();
-    delay_x_us();
+    I2C_DelayUs(I2C_DELAY_TIME);
     SI7021_SCL_HIGH();
-    delay_x_us();
+    I2C_DelayUs(I2C_DELAY_TIME);
     SI7021_SDA_LOW();
-    delay_x_us();
+    I2C_DelayUs(I2C_DELAY_TIME);
     SI7021_SCL_LOW();
-    delay_x_us();
+    I2C_DelayUs(I2C_DELAY_TIME);
 }
 
-void stop_i2c(void)
+static void I2C_Stop(void)
 {
     SI7021_SDA_LOW();
-    delay_x_us();
+    I2C_DelayUs(I2C_DELAY_TIME);
     SI7021_SCL_HIGH();
-    delay_x_us();
+    I2C_DelayUs(I2C_DELAY_TIME);
     SI7021_SDA_HIGH();
-    delay_x_us();
+    I2C_DelayUs(I2C_DELAY_TIME);
 }
 
-BOOLEAN send_1byte(u8 send_data)
+static BOOLEAN I2C_SendByte(uint8_t send_data)
 {
-    u8 bit_cnt;
-    BOOLEAN b_ack = 0;
-    u8 i          = 200;
-    u8 j;
+    uint8_t i;
+    BOOLEAN ret = 0;
+    uint8_t delay;
+    uint8_t read;
 
-    for (bit_cnt = 0; bit_cnt < 8; bit_cnt++) {
+    for (i = 0; i < 8; i++) {
         SI7021_SCL_LOW();
-        if ((send_data << bit_cnt) & 0x80) {
+        if ((send_data << i) & 0x80) {
             SI7021_SDA_HIGH();
         } else {
             SI7021_SDA_LOW();
         }
-        delay_x_us();
+        I2C_DelayUs(I2C_DELAY_TIME);
         SI7021_SCL_HIGH();
-        delay_x_us();
+        I2C_DelayUs(I2C_DELAY_TIME);
     }
 
-    delay_x_us();
+    I2C_DelayUs(I2C_DELAY_TIME);
     SI7021_SCL_LOW();
     SI7021_SDA_HIGH();
-    delay_x_us();
+    I2C_DelayUs(I2C_DELAY_TIME);
 
-    delay_x_us();
+    I2C_DelayUs(I2C_DELAY_TIME);
     SI7021_SCL_HIGH();
-    delay_x_us();
+    I2C_DelayUs(I2C_DELAY_TIME);
 
     SI7021_SDAIN();
-    i = 200;
-    while (i--) {
-        delay_x_us();
-        j = SI7021_SDA_PORT;
-        if ((j & SI7021_SDA_NUMBER) == 0x00) {
-            b_ack = 1;
+    delay = 200;
+    while (delay--) {
+        I2C_DelayUs(I2C_DELAY_TIME);
+        read = SI7021_SDA_PORT;
+        if ((read & SI7021_SDA_NUMBER) == 0x00) {
+            ret = 1;
             break;
         }
     }
     SI7021_SDAOUT();
 
-    if (i == 0)
-        b_ack = 0;
+    if (delay == 0) {
+        ret = 0;
+    }
 
     SI7021_SCL_LOW();
-    delay_x_us();
+    I2C_DelayUs(I2C_DELAY_TIME);
 
-    return b_ack;
+    return ret;
 }
 
-u8 read_1byte(void)
+static uint8_t I2C_ReadByte(void)
 {
-    u8 read_value = 0;
-    u8 bit_cnt;
-    u8 j;
+    uint8_t value = 0;
+    uint8_t i;
+    uint8_t read;
 
     SI7021_SDAIN();
-    for (bit_cnt = 0; bit_cnt < 8; bit_cnt++) {
+    for (i = 0; i < 8; i++) {
         SI7021_SCL_HIGH();
-        delay_x_us();
-        read_value <<= 1;
-        j = SI7021_SDA_PORT;
-        if (j & SI7021_SDA_NUMBER) {
-            read_value += 1;
+        I2C_DelayUs(I2C_DELAY_TIME);
+        value <<= 1;
+        read = SI7021_SDA_PORT;
+        if (read & SI7021_SDA_NUMBER) {
+            value += 1;
         }
         SI7021_SCL_LOW();
     }
     SI7021_SDAOUT();
 
-    return (read_value);
+    return value;
 }
 
-void master_i2c_ack(void)
+static void I2C_Ack(void)
 {
     SI7021_SDA_LOW();
-    delay_x_us();
+    I2C_DelayUs(I2C_DELAY_TIME);
     SI7021_SCL_LOW();
-    delay_x_us();
+    I2C_DelayUs(I2C_DELAY_TIME);
     SI7021_SCL_HIGH();
-    delay_x_us();
+    I2C_DelayUs(I2C_DELAY_TIME);
     SI7021_SCL_LOW();
-    delay_x_us();
+    I2C_DelayUs(I2C_DELAY_TIME);
     SI7021_SDA_HIGH();
-    delay_x_us();
+    I2C_DelayUs(I2C_DELAY_TIME);
 }
 
-void master_i2c_noack(void)
+static void I2C_Nack(void)
 {
     SI7021_SDA_HIGH();
-    delay_x_us();
+    I2C_DelayUs(I2C_DELAY_TIME);
     SI7021_SCL_HIGH();
-    delay_x_us();
+    I2C_DelayUs(I2C_DELAY_TIME);
     SI7021_SCL_LOW();
 }
 
-void measure_si7021(u8 model, union16 *value)
+static void SI7021_Measure(uint8_t model, union union16 *value)
 {
-    u16 tmp;
+    uint16_t tmp;
     FP32 buff;
-    u8 crc8;
+    uint8_t crc8;
 
-    start_i2c();
-    if (0 == send_1byte(SALVE_ADDR)) { // slave addr
+    I2C_Start();
+    if (0 == I2C_SendByte(SALVE_ADDR)) { // slave addr
         value->uint = 0xAABB;
         return;
     }
-    if (0 == send_1byte(model)) { // measure cmd
+    if (0 == I2C_SendByte(model)) { // measure cmd
         value->uint = 0x1234;
         return;
     }
 
     DelayMs(100);
 
-    start_i2c();
-    if (0 == send_1byte(SALVE_ADDR + 1)) {
+    I2C_Start();
+    if (0 == I2C_SendByte(SALVE_ADDR + 1)) {
         value->uint = 0x3456;
         return;
     }
 
-    value->uchar[HSB] = read_1byte();
-    master_i2c_ack();
-    value->uchar[LSB] = read_1byte();
-    master_i2c_ack();
-    crc8 = read_1byte();
-    master_i2c_noack();
-    stop_i2c();
+    value->uchar[HSB] = I2C_ReadByte();
+    I2C_Ack();
+    value->uchar[LSB] = I2C_ReadByte();
+    I2C_Ack();
+    crc8 = I2C_ReadByte();
+    I2C_Nack();
+    I2C_Stop();
 
     tmp = (value->uchar[HSB] << 8) | value->uchar[LSB];
     if (model != TEMP_HOLD_MASTER) {
         buff = tmp * 125.0;
         buff = buff / 65536 - 6;
-        humi = buff * 100;
+        g_si7021.humi = buff * 100;
     } else {
         buff = tmp * 175.72;
         buff = buff / 65536 - 46.85;
-        temp = buff * 100;
+        g_si7021.temp = buff * 100;
     }
+}
+
+void SI7021_SampleTempHumi(void)
+{
+    static uint8_t count = 0;
+
+    count++;
+    if (count > 10) {
+        count = 0x00;
+        if (GetSetModeCtr() == 0) {
+            SI7021_Measure(TEMP_HOLD_MASTER, (union union16 *)(&g_si7021.temp));
+            DelayMs(1);
+            SI7021_Measure(HUMI_HOLD_MASTER, (union union16 *)(&g_si7021.humi));
+        }
+    }
+}
+
+int16_t GetTemp(void)
+{
+    return g_si7021.temp;
+}
+
+uint16_t GetHumi(void)
+{
+    return g_si7021.humi;
 }

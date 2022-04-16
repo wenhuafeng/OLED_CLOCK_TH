@@ -1,37 +1,29 @@
 #ifndef GP_SUB_H
 #define GP_SUB_H
 
-#define _HEX_TO_ASC_
-//#define _ASC_TO_HEX_
-#define _DELAY_US
-#define _DELAY_MS
-//#define _C24HR_TO_12HR
-//#define _C2F
-//#define _F2C
-//#define _CALC_WEEK
-//#define _HPA2INHG
-//#define _HEX2DEC
-//#define _DEC2HEX
+#include "func_def.h"
 
-#ifdef _HEX2DEC
-extern INT8U DEC[4]; //dec2hex use.
-#endif
+#define HEX_TO_ASC 1
+#define ASC_TO_HEX 0
+#define DELAY_US 1
+#define DELAY_MS 1
+#define C24HR_TO_12HR 0
+#define C2F 0
+#define F2C 0
+#define CALC_WEEK 0
+#define HPA_TO_INHG 0
+#define HEX_TO_DEC 0
+#define DEC_TO_HEX 0
 
-#ifdef _DEC2HEX
-extern INT8U HEX; //hex2dec use.
-#endif
-
-INT8U HexToAsc(INT8U aHex);
-INT8U AscToHex(INT8U aChar);
-
-void KEY_TONE(void);
-void DelayUs(INT16U count);
-void DelayMs(INT16U t);
-INT8U C24HR_TO_12HR(INT8U hr);
-INT16S C2F(INT16S temp);
-//void CALC_WEEK        (void);
-INT16U HPA2INHG(INT16U i);
-void HEX2DEC(INT16U Hp);
-INT8U DEC2HEX(INT8U HEX_1);
+uint8_t HexToAsc(uint8_t hex);
+uint8_t AscToHex(uint8_t asc);
+void DelayUs(uint16_t count);
+void DelayMs(uint16_t count);
+uint8_t Hour24hrTo12hr(uint8_t hr);
+int16_t CelsiusToFahrenheit(int16_t c);
+void CalcWeek(void);
+uint16_t HpaToInhg(uint16_t hpa);
+void HexToDec(uint16_t hex);
+uint8_t DecToHex(uint8_t dec);
 
 #endif

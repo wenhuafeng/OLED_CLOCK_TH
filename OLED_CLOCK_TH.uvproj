@@ -400,9 +400,14 @@
               <FilePath>.\code\si7021.c</FilePath>
             </File>
             <File>
-              <FileName>table.c</FileName>
+              <FileName>main_sub.c</FileName>
               <FileType>1</FileType>
-              <FilePath>.\code\table.c</FilePath>
+              <FilePath>.\code\main_sub.c</FilePath>
+            </File>
+            <File>
+              <FileName>common.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\code\common.c</FilePath>
             </File>
           </Files>
         </Group>

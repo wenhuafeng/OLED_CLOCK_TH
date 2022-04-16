@@ -1,9 +1,7 @@
 #ifndef DISPLAY_H
 #define DISPLAY_H
 
-extern BOOLEAN F_temp;
-extern u8 DispChange;
-
+void DispChangeCtr(void);
 void Display(void);
 
 #endif
