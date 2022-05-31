@@ -3,7 +3,6 @@
         "gp_sub.c": "c",
         "gp_sub.h": "c",
         "func_def.h": "c",
-        "GP_SUB.H": "cpp",
         "GP_SUB.C": "cpp"
     }
 }

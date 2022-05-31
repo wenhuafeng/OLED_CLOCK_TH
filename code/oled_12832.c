@@ -134,7 +134,8 @@ code uint8_t T8X16[] = {
 
 static void I2C_Delay(uint8_t delay)
 {
-    while (delay-- != 0);
+    while (delay-- != 0)
+        ;
 }
 
 static void I2C_Start(void)
@@ -234,34 +235,34 @@ void OLED_Init(void)
     LCD_RESET = 1;
     DelayMs(10);
 
-    OLED_WriteCmd(0xae);       //--turn off oled panel
-    OLED_WriteCmd(0x00);       //---set low column address
-    OLED_WriteCmd(0x10);       //---set high column address
-    OLED_WriteCmd(0x40);       //--set start line address  Set Mapping RAM Display Start Line (0x00~0x3F)
-    OLED_WriteCmd(0x81);       //--set contrast control register
+    OLED_WriteCmd(0xae);       // Turn off oled panel
+    OLED_WriteCmd(0x00);       // Set low column address
+    OLED_WriteCmd(0x10);       // Set high column address
+    OLED_WriteCmd(0x40);       // Set start line address  Set Mapping RAM Display Start Line (0x00~0x3F)
+    OLED_WriteCmd(0x81);       // Set contrast control register
     OLED_WriteCmd(BRIGHTNESS); // Set SEG Output Current BRIGHTNESS
-    OLED_WriteCmd(0xa1);       //--Set SEG/Column Mapping     0xa0左右反置 0xa1正常
-    OLED_WriteCmd(0xc8);       //Set COM/Row Scan Direction   0xc0上下反置 0xc8正常
-    OLED_WriteCmd(0xa6);       //--set normal display
-    OLED_WriteCmd(0xa8);       //--set multiplex ratio(1 to 64)
-    OLED_WriteCmd(0x3f);       //--1/64 duty
-    OLED_WriteCmd(0xd3);       //-set display offset        Shift Mapping RAM Counter (0x00~0x3F)
-    OLED_WriteCmd(0x00);       //-not offset
-    OLED_WriteCmd(0xd5);       //--set display clock divide ratio/oscillator frequency
-    OLED_WriteCmd(0x80);       //--set divide ratio, Set Clock as 100 Frames/Sec
-    OLED_WriteCmd(0xd9);       //--set pre-charge period
-    OLED_WriteCmd(0xf1);       //Set Pre-Charge as 15 Clocks & Discharge as 1 Clock
-    OLED_WriteCmd(0xda);       //--set com pins hardware configuration
+    OLED_WriteCmd(0xa1);       // Set SEG/Column Mapping     0xa0左右反置 0xa1正常
+    OLED_WriteCmd(0xc8);       // Set COM/Row Scan Direction   0xc0上下反置 0xc8正常
+    OLED_WriteCmd(0xa6);       // Set normal display
+    OLED_WriteCmd(0xa8);       // Set multiplex ratio(1 to 64)
+    OLED_WriteCmd(0x3f);       // 1/64 duty
+    OLED_WriteCmd(0xd3);       // Set display offset        Shift Mapping RAM Counter (0x00~0x3F)
+    OLED_WriteCmd(0x00);       // Not offset
+    OLED_WriteCmd(0xd5);       // Set display clock divide ratio/oscillator frequency
+    OLED_WriteCmd(0x80);       // Set divide ratio, Set Clock as 100 Frames/Sec
+    OLED_WriteCmd(0xd9);       // Set pre-charge period
+    OLED_WriteCmd(0xf1);       // Set Pre-Charge as 15 Clocks & Discharge as 1 Clock
+    OLED_WriteCmd(0xda);       // Set com pins hardware configuration
     OLED_WriteCmd(0x12);       //
-    OLED_WriteCmd(0xdb);       //--set vcomh
-    OLED_WriteCmd(0x40);       //Set VCOM Deselect Level
-    OLED_WriteCmd(0x20);       //-Set Page Addressing Mode (0x00/0x01/0x02)
+    OLED_WriteCmd(0xdb);       // Set vcomh
+    OLED_WriteCmd(0x40);       // Set VCOM Deselect Level
+    OLED_WriteCmd(0x20);       // Set Page Addressing Mode (0x00/0x01/0x02)
     OLED_WriteCmd(0x02);       //
-    OLED_WriteCmd(0x8d);       //--set Charge Pump enable/disable
-    OLED_WriteCmd(0x14);       //--set(0x10) disable
+    OLED_WriteCmd(0x8d);       // Set Charge Pump enable/disable
+    OLED_WriteCmd(0x14);       // Set(0x10) disable
     OLED_WriteCmd(0xa4);       // Disable Entire Display On (0xa4/0xa5)
     OLED_WriteCmd(0xa6);       // Disable Inverse Display On (0xa6/a7)
-    OLED_WriteCmd(0xaf);       //--turn on oled panel
+    OLED_WriteCmd(0xaf);       // Turn on oled panel
     OLED_SetXY(0, 0);
 }
 
@@ -357,21 +358,22 @@ void OLED_P8x16Str(void)
     } while (j < 32);
 }
 
+code uint8_t WeekTable[8][3] = {
+    'S', 'u', 'n', 'M', 'o', 'n', 'T', 'u', 'e', 'W', 'e', 'd', 'T', 'h', 'u', 'F', 'r', 'i', 'S', 't', 'a',
+};
+
 void OLED_DispClock(void)
 {
     uint8_t i;
     enum SetItemType item = GetItem();
     struct TimeType *time = GetTime();
-    uint8_t sec = time->sec;
-    uint8_t min = time->min;
-    uint8_t hour = time->hour;
-    uint8_t day = time->day;
-    uint8_t week = time->week;
-    uint8_t month = time->month;
-    uint16_t year = time->year;
-    code uint8_t WeekTable[8][3] = {
-        'S', 'u', 'n', 'M', 'o', 'n', 'T', 'u', 'e', 'W', 'e', 'd', 'T', 'h', 'u', 'F', 'r', 'i', 'S', 't', 'a',
-    };
+    uint8_t sec           = time->sec;
+    uint8_t min           = time->min;
+    uint8_t hour          = time->hour;
+    uint8_t day           = time->day;
+    uint8_t week          = time->week;
+    uint8_t month         = time->month;
+    uint16_t year         = time->year;
 
     for (i = 0; i < 32; i++) {
         g_letterTable[i] = ' ';
@@ -455,8 +457,8 @@ void OLED_DispTempHumi(void)
     tmp2 = temp % 100; //low
     if (temp < 0) {
         g_letterTable[4] = '-';
-        tmp3   = 0 - tmp3;
-        tmp2   = 0 - tmp2;
+        tmp3             = 0 - tmp3;
+        tmp2             = 0 - tmp2;
     }
     g_letterTable[5]  = HexToAsc(tmp3 / 10);
     g_letterTable[6]  = HexToAsc(tmp3 % 10);
@@ -465,8 +467,8 @@ void OLED_DispTempHumi(void)
     g_letterTable[9]  = HexToAsc(tmp2 % 10);
     g_letterTable[10] = 'C';
 
-    tmp1         = humi / 100; //high
-    tmp0         = humi % 100; //low
+    tmp1                   = humi / 100; //high
+    tmp0                   = humi % 100; //low
     g_letterTable[16 + 5]  = HexToAsc(tmp1 / 10);
     g_letterTable[16 + 6]  = HexToAsc(tmp1 % 10);
     g_letterTable[16 + 7]  = '.';

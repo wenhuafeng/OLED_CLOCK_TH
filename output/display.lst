@@ -1,0 +1,55 @@
+C51 COMPILER V9.59.0.0   DISPLAY                                                           05/31/2022 20:33:57 PAGE 1   
+
+
+C51 COMPILER V9.59.0.0, COMPILATION OF MODULE DISPLAY
+OBJECT MODULE PLACED IN .\output\display.obj
+COMPILER INVOKED BY: d:\Keil_v5\C51\BIN\C51.EXE code\display.c ROM(COMPACT) OPTIMIZE(8,SPEED) BROWSE DEBUG OBJECTEXTEND 
+                    -PRINT(.\output\display.lst) OBJECT(.\output\display.obj)
+
+line level    source
+
+   1          #include "display.h"
+   2          #include "func_def.h"
+   3          #include "key_func.h"
+   4          #include "oled_12832.h"
+   5          
+   6          static BOOLEAN g_dispChange;
+   7          
+   8          void DispChangeCtr(void)
+   9          {
+  10   1          static uint8_t dispCtr = 0;
+  11   1      
+  12   1          dispCtr++;
+  13   1          if (dispCtr > 4) {
+  14   2              dispCtr = 0x00;
+  15   2              g_dispChange = ~g_dispChange;
+  16   2          }
+  17   1      }
+  18          
+  19          void Display(void)
+  20          {
+  21   1          if (GetSetModeCtr() != 0) {
+  22   2              g_dispChange = 0;
+  23   2          }
+  24   1      
+  25   1          if (g_dispChange == 0) {
+  26   2              OLED_DispClock();
+  27   2          } else {
+  28   2              OLED_DispTempHumi();
+  29   2          }
+  30   1          OLED_P8x16Str();
+  31   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =     41    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =      1    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =      1    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

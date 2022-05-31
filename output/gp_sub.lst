@@ -1,0 +1,216 @@
+C51 COMPILER V9.59.0.0   GP_SUB                                                            05/31/2022 20:33:57 PAGE 1   
+
+
+C51 COMPILER V9.59.0.0, COMPILATION OF MODULE GP_SUB
+OBJECT MODULE PLACED IN .\output\gp_sub.obj
+COMPILER INVOKED BY: d:\Keil_v5\C51\BIN\C51.EXE code\gp_sub.c ROM(COMPACT) OPTIMIZE(8,SPEED) BROWSE DEBUG OBJECTEXTEND P
+                    -RINT(.\output\gp_sub.lst) OBJECT(.\output\gp_sub.obj)
+
+line level    source
+
+   1          #include "gp_sub.h"
+   2          #include "func_def.h"
+   3          
+   4          #if defined(HEX_TO_DEC) && HEX_TO_DEC
+              static uint8_t g_dec[4];
+              #endif
+   7          
+   8          #if defined(HEX_TO_ASC) && HEX_TO_ASC
+   9          uint8_t HexToAsc(uint8_t hex)
+  10          {
+  11   1          if ((hex >= 0) && (hex <= 9)) {
+  12   2              hex += 0x30;
+  13   2          } else if ((hex >= 10) && (hex <= 15)) {
+  14   2              hex += 0x37;
+  15   2          } else {
+  16   2              hex = 0xff;
+  17   2          }
+  18   1      
+  19   1          return hex;
+  20   1      }
+  21          #endif
+  22          
+  23          #if defined(ASC_TO_HEX) && ASC_TO_HEX
+              uint8_t AscToHex(uint8_t asc)
+              {
+                  if ((aChar >= 0x30) && (aChar <= 0x39))
+                      aChar -= 0x30;
+                  else if ((aChar >= 0x41) && (aChar <= 0x46))
+                      aChar -= 0x37;
+                  else if ((aChar >= 0x61) && (aChar <= 0x66))
+                      aChar -= 0x57;
+                  else
+                      aChar = 0xff;
+              
+                  return aChar;
+              }
+              #endif
+  38          
+  39          #if defined(DELAY_US) && DELAY_US
+  40          void DelayUs(uint16_t count)
+  41          {
+  42   1          while (count--)
+  43   1              ;
+  44   1      }
+  45          #endif
+  46          
+  47          #if defined(DELAY_MS) && DELAY_MS
+  48          void DelayMs(uint16_t count) // 用示波器调过
+  49          {
+  50   1          /*
+  51   1          //8M
+  52   1          uint8_t i,j;
+  53   1          for(; count > 0; count--)
+  54   1          for(j = 21; j > 0; j--)
+C51 COMPILER V9.59.0.0   GP_SUB                                                            05/31/2022 20:33:57 PAGE 2   
+
+  55   1          for(i = 90; i > 0; i--);
+  56   1          */
+  57   1      
+  58   1          //16M
+  59   1          uint8_t i, j;
+  60   1          for (; count > 0; count--)
+  61   1              for (j = 20; j > 0; j--)
+  62   1                  for (i = 199; i > 0; i--)
+  63   1                      ;
+  64   1      }
+  65          #endif
+  66          
+  67          #if defined(C24HR_TO_12HR) && C24HR_TO_12HR
+              uint8_t Hour24hrTo12hr(uint8_t hr)
+              {
+                  uint8_t val;
+              
+                  if (hr <= 11) {
+                      F_AM_PM = _AM;
+                      if (hr == 0) {
+                          val = 12;
+                      } else {
+                          val = hr;
+                      }
+                  } else {
+                      F_AM_PM = _PM;
+                      if (hr == 12) {
+                          val = hr;
+                      } else {
+                          val = hr - 12;
+                      }
+                  }
+              
+                  return val;
+              }
+              #endif
+  91          
+  92          #if defined(C2F) && C2F
+              int16_t CelsiusToFahrenheit(int16_t c)
+              {
+                  return (c * 18 + 320);
+              }
+              #endif
+  98          
+  99          #if defined(F2C) && F2C
+              int16_t F2C(int16_t temp)
+              {
+                  return ((temp - 320) / 18);
+              }
+              #endif
+ 105          
+ 106          /********************************************************************/ /**
+ 107           * @brief:      Calculate weekday Function subprogram
+ 108           *              Weekday={(Year+12)+Day+(Year+12)/4+T[Mtab]-1}Mod7
+ 109           *              If Month<3 The Year Sub 1
+ 110           *
+ 111           * @param[in]:  Year,Month Offset(Mtab),Day
+ 112           *              1990<=Year<=2099, 1<=Month<=12, 1<=Day<=31
+ 113           *
+ 114           * @return:     WEEK(0=Sunday,1=Monday,...,6=Saturday)
+ 115           *********************************************************************/
+ 116          #if defined(CALC_WEEK) && CALC_WEEK
+C51 COMPILER V9.59.0.0   GP_SUB                                                            05/31/2022 20:33:57 PAGE 3   
+
+              void CalcWeek(void)
+              {
+                  uint16_t tmp1, tmp2, tmp3;
+                  uint8_t weekTable[13] = { 0x00, 0x00, 0x03, 0x02, 0x05, 0x00, 0x03, 0x05, 0x01, 0x04, 0x06, 0x02, 0x04
+             - };
+              
+                  tmp1 = DecToHex(D_YEAR);
+                  tmp2 = DecToHex(D_MONTH);
+                  tmp3 = DecToHex(D_DAY);
+              
+                  D_WEEK = (tmp1 + tmp3 + (tmp1 / 4) + weekTable[tmp2] - 1) % 7;
+              }
+              
+              #endif
+ 130          
+ 131          #if defined(HPA_TO_INHG) && HPA_TO_INHG
+              uint16_t HpaToInhg(uint16_t hpa)
+              {
+                  return (hpa * 2953 / 1000);
+              }
+              #endif
+ 137          
+ 138          #if defined(HEX_TO_DEC) && HEX_TO_DEC
+              void HexToDec(uint16_t hex)
+              {
+                  uint16_t i;
+              
+                  i        = hex;
+                  g_dec[0] = 0;
+                  g_dec[1] = 0;
+                  g_dec[2] = 0;
+                  g_dec[3] = 0;
+              
+                  while (i >= 1000) {
+                      i = i - 1000;
+                      g_dec[3]++;
+                  }
+              
+                  while (i >= 100) {
+                      i = i - 100;
+                      g_dec[2]++;
+                  }
+              
+                  while (i >= 10) {
+                      i = i - 10;
+                      g_dec[1]++;
+                  }
+              
+                  g_dec[0] = i;
+              }
+              #endif
+ 167          
+ 168          #if defined(DEC_TO_HEX) && DEC_TO_HEX
+              uint8_t DecToHex(uint8_t dec)
+              {
+                  uint8_t i;
+              
+                  i = dec & 0xf0;
+                  i = i >> 4;
+              
+                  dec = dec & 0x0f;
+              
+C51 COMPILER V9.59.0.0   GP_SUB                                                            05/31/2022 20:33:57 PAGE 4   
+
+                  while (i != 0) {
+                      i--;
+                      dec = dec + 0x0a;
+                  }
+              
+                  return dec;
+              }
+              #endif
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    114    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)
