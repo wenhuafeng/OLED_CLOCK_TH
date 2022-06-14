@@ -16,26 +16,28 @@ CHECKSUM_CRC16    = 'checksum.exe OLED_CLOCK_TH.hex CRC16'
 CHECKSUM_CRC32    = 'checksum.exe OLED_CLOCK_TH.hex CRC32'
 CHECKSUM_SHA256   = 'checksum.exe OLED_CLOCK_TH.hex SHA256'
 
-def main():
-    start = datetime.datetime.now()
-
+def rm_output():
     # 删除output文件夹
     name = "output"
     path = "./" + name
     if os.path.exists(path):
         shutil.rmtree(path)
 
+def build():
     # 编译项目
     os.system(BUILD_COMMAND)
 
+def log_file_print():
     # 输出编译log文件
     with open(BUILD_LOG_FILE, "r") as f:
         data = f.read()
         print(data)
 
+def copy_hex_file():
     # 复制输出文件到run目录
     os.system(COPY_OUT_FILE)
 
+def checksum_hex_file():
     # 切换目录到run
     path = "./run"
     os.chdir(path)
@@ -46,6 +48,15 @@ def main():
     #os.system(CHECKSUM_CRC16)
     #os.system(CHECKSUM_CRC32)
     #os.system(CHECKSUM_SHA256)
+
+def main():
+    start = datetime.datetime.now()
+
+    rm_output()
+    build()
+    log_file_print()
+    copy_hex_file()
+    checksum_hex_file()
 
     end = datetime.datetime.now()
     print('run time: %s second' %(end - start))
