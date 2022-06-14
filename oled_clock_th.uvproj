@@ -46,7 +46,7 @@
             <InvalidFlash>1</InvalidFlash>
           </TargetStatus>
           <OutputDirectory>.\output\</OutputDirectory>
-          <OutputName>OLED_CLOCK_TH</OutputName>
+          <OutputName>oled_clock_th</OutputName>
           <CreateExecutable>1</CreateExecutable>
           <CreateLib>0</CreateLib>
           <CreateHexFile>1</CreateHexFile>
@@ -365,6 +365,11 @@
           <GroupName>usr</GroupName>
           <Files>
             <File>
+              <FileName>common.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\code\common.c</FilePath>
+            </File>
+            <File>
               <FileName>display.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\code\display.c</FilePath>
@@ -385,6 +390,11 @@
               <FilePath>.\code\main.c</FilePath>
             </File>
             <File>
+              <FileName>main_sub.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\code\main_sub.c</FilePath>
+            </File>
+            <File>
               <FileName>oled_12832.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\code\oled_12832.c</FilePath>
@@ -398,16 +408,6 @@
               <FileName>si7021.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\code\si7021.c</FilePath>
-            </File>
-            <File>
-              <FileName>main_sub.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\code\main_sub.c</FilePath>
-            </File>
-            <File>
-              <FileName>common.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\code\common.c</FilePath>
             </File>
           </Files>
         </Group>
