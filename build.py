@@ -1,8 +1,8 @@
 #!/usr/bin/python
 
 import os
-import sys
 import datetime
+import shutil
 
 BUILD_LOG_FILE    = "build_log.txt"
 BUILD_COMMAND     = 'D:\\Keil_v5\\UV4\\UV4.exe -sg -j0 -b OLED_CLOCK_TH.uvproj -o ./build_log.txt'
@@ -16,24 +16,39 @@ CHECKSUM_CRC16    = 'checksum.exe OLED_CLOCK_TH.hex CRC16'
 CHECKSUM_CRC32    = 'checksum.exe OLED_CLOCK_TH.hex CRC32'
 CHECKSUM_SHA256   = 'checksum.exe OLED_CLOCK_TH.hex SHA256'
 
-# 编译项目
-os.system(BUILD_COMMAND)
+def main():
+    start = datetime.datetime.now()
 
-# 输出编译log文件
-with open(BUILD_LOG_FILE, "r") as f:
-    data = f.read()
-    print(data)
+    # 删除output文件夹
+    name = "output"
+    path = "./" + name
+    if os.path.exists(path):
+        shutil.rmtree(path)
 
-# 复制输出文件到run目录
-os.system(COPY_OUT_FILE)
+    # 编译项目
+    os.system(BUILD_COMMAND)
 
-# 切换目录到run
-path = "./run"
-os.chdir(path)
+    # 输出编译log文件
+    with open(BUILD_LOG_FILE, "r") as f:
+        data = f.read()
+        print(data)
 
-# 输出文件需要的信息
-os.system(CHECKSUM_ALL)
-#os.system(CHECKSUM_CHECKSUM)
-#os.system(CHECKSUM_CRC16)
-#os.system(CHECKSUM_CRC32)
-#os.system(CHECKSUM_SHA256)
+    # 复制输出文件到run目录
+    os.system(COPY_OUT_FILE)
+
+    # 切换目录到run
+    path = "./run"
+    os.chdir(path)
+
+    # 输出文件需要的信息
+    os.system(CHECKSUM_ALL)
+    #os.system(CHECKSUM_CHECKSUM)
+    #os.system(CHECKSUM_CRC16)
+    #os.system(CHECKSUM_CRC32)
+    #os.system(CHECKSUM_SHA256)
+
+    end = datetime.datetime.now()
+    print('run time: %s second' %(end - start))
+
+if __name__ == "__main__":
+    main()
