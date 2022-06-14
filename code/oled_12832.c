@@ -365,8 +365,8 @@ code uint8_t WeekTable[8][3] = {
 void OLED_DispClock(void)
 {
     uint8_t i;
-    enum SetItemType item = GetItem();
-    struct TimeType *time = GetTime();
+    enum SetItemType item = KEY_GetItem();
+    struct TimeType *time = RTC_GetTime();
     uint8_t sec           = time->sec;
     uint8_t min           = time->min;
     uint8_t hour          = time->hour;
@@ -380,7 +380,7 @@ void OLED_DispClock(void)
     }
 
     if (item == CLOCK_SET_YEAR) {
-        if (GetTimeFlag(SET_COL_FLAG) || GetKeyFlag(HOLD_KEY_FLAG)) {
+        if (RTC_GetTimeFlag(SET_COL_FLAG) || KEY_GetKeyFlag(HOLD_KEY_FLAG)) {
             g_letterTable[1] = '2';
             g_letterTable[2] = '0';
             g_letterTable[3] = HexToAsc(year % 100 / 10);
@@ -394,7 +394,7 @@ void OLED_DispClock(void)
     }
     g_letterTable[5] = '-';
     if (item == CLOCK_SET_MONTH) {
-        if (GetTimeFlag(SET_COL_FLAG) || GetKeyFlag(HOLD_KEY_FLAG)) {
+        if (RTC_GetTimeFlag(SET_COL_FLAG) || KEY_GetKeyFlag(HOLD_KEY_FLAG)) {
             g_letterTable[6] = HexToAsc(month / 10);
             g_letterTable[7] = HexToAsc(month % 10);
         }
@@ -404,7 +404,7 @@ void OLED_DispClock(void)
     }
     g_letterTable[8] = '-';
     if (item == CLOCK_SET_DAY) {
-        if (GetTimeFlag(SET_COL_FLAG) || GetKeyFlag(HOLD_KEY_FLAG)) {
+        if (RTC_GetTimeFlag(SET_COL_FLAG) || KEY_GetKeyFlag(HOLD_KEY_FLAG)) {
             g_letterTable[9]  = HexToAsc(day / 10);
             g_letterTable[10] = HexToAsc(day % 10);
         }
@@ -417,7 +417,7 @@ void OLED_DispClock(void)
     g_letterTable[14] = WeekTable[week][2];
 
     if (item == CLOCK_SET_HOUR) {
-        if (GetTimeFlag(SET_COL_FLAG) || GetKeyFlag(HOLD_KEY_FLAG)) {
+        if (RTC_GetTimeFlag(SET_COL_FLAG) || KEY_GetKeyFlag(HOLD_KEY_FLAG)) {
             g_letterTable[20] = HexToAsc(hour / 10);
             g_letterTable[21] = HexToAsc(hour % 10);
         }
@@ -427,7 +427,7 @@ void OLED_DispClock(void)
     }
     g_letterTable[22] = ':';
     if (item == CLOCK_SET_MIN) {
-        if (GetTimeFlag(SET_COL_FLAG) || GetKeyFlag(HOLD_KEY_FLAG)) {
+        if (RTC_GetTimeFlag(SET_COL_FLAG) || KEY_GetKeyFlag(HOLD_KEY_FLAG)) {
             g_letterTable[23] = HexToAsc(min / 10);
             g_letterTable[24] = HexToAsc(min % 10);
         }
@@ -446,8 +446,8 @@ void OLED_DispTempHumi(void)
     uint8_t i;
     uint8_t tmp0, tmp1;
     int8_t tmp2, tmp3;
-    int16_t temp  = GetTemp();
-    uint16_t humi = GetHumi();
+    int16_t temp  = SI7021_GetTemp();
+    uint16_t humi = SI7021_GetHumi();
 
     for (i = 0; i < 32; i++) {
         g_letterTable[i] = ' ';

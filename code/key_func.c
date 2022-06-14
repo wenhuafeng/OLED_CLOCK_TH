@@ -36,19 +36,19 @@ static enum SetItemType g_setItem;
 static uint8_t g_setModeCtr;
 static uint8_t g_holdKeyCtr;
 
-void IncHoldKeyCtr(void)
+void KEY_IncHoldKeyCtr(void)
 {
     g_holdKeyCtr++;
 }
 
-void SetKeyFlag(uint8_t keyFlag)
+void KEY_SetKeyFlag(uint8_t keyFlag)
 {
     struct KeyType *type = &g_key;
 
     type->keyFlag.flags |= keyFlag;
 }
 
-BOOLEAN GetKeyFlag(uint8_t flags)
+BOOLEAN KEY_GetKeyFlag(uint8_t flags)
 {
     BOOLEAN ret;
     struct KeyType *type = &g_key;
@@ -62,39 +62,39 @@ BOOLEAN GetKeyFlag(uint8_t flags)
     return ret;
 }
 
-void ResetKeyFlag(uint8_t flags)
+void KEY_ResetKeyFlag(uint8_t flags)
 {
     struct KeyType *type = &g_key;
 
     type->keyFlag.flags &= ~flags;
 }
 
-void SetItem(enum SetItemType item)
+void KEY_SetItem(enum SetItemType item)
 {
     g_setItem = item;
 }
 
-enum SetItemType GetItem(void)
+enum SetItemType KEY_GetItem(void)
 {
     return g_setItem;
 }
 
-uint8_t GetSetModeCtr(void)
+uint8_t KEY_GetSetModeCtr(void)
 {
     return g_setModeCtr;
 }
 
-void SetModeCountDec(void)
+void KEY_SetModeCountDec(void)
 {
     if (g_setModeCtr) {
         g_setModeCtr--;
         if (g_setModeCtr == 0x00) {
-            SetItem(NORMAL_MODE);
+            KEY_SetItem(NORMAL_MODE);
         }
     }
 }
 
-void ScanKey(void)
+void KEY_ScanKey(void)
 {
     uint8_t i, j;
     struct KeyType *type = &g_key;
@@ -155,7 +155,7 @@ normal_quit_scan_key:
     ENABLE_KEY_INT();
 }
 
-BOOLEAN HoldKeyCom(void)
+BOOLEAN KEY_HoldKeyCom(void)
 {
     struct KeyType *type = &g_key;
 
@@ -173,7 +173,7 @@ BOOLEAN HoldKeyCom(void)
     return 0;
 }
 
-BOOLEAN SettingCom(void)
+BOOLEAN KEY_SettingCom(void)
 {
     struct KeyType *type = &g_key;
 
@@ -194,7 +194,7 @@ BOOLEAN SettingCom(void)
     return 0;
 }
 
-void PushKeyFunc(void)
+void KEY_PushKeyFunc(void)
 {
     struct KeyType *type = &g_key;
 
@@ -211,11 +211,11 @@ void PushKeyFunc(void)
     switch (type->key) {
         case UP_KEY:
             if (g_setItem != NORMAL_MODE) {
-                if (SettingCom() == 1) {
+                if (KEY_SettingCom() == 1) {
                     if (type->keyFlag.flag.newKey == 1) {
                         switch (g_setItem) {
                             case CLOCK_SET_HR:
-                                ToggleTimeFlag(SET_HR_FLAG);
+                                RTC_ToggleTimeFlag(SET_HR_FLAG);
                                 break;
                             default:
                                 break;
@@ -224,35 +224,35 @@ void PushKeyFunc(void)
 
                     switch (g_setItem) {
                         case CLOCK_SET_HOUR:
-                            IncHour();
+                            RTC_IncHour();
                             break;
                         case CLOCK_SET_MIN:
-                            IncMin();
+                            RTC_IncMin();
                             break;
                         case CLOCK_SET_YEAR:
-                            IncYear();
+                            RTC_IncYear();
                             break;
                         case CLOCK_SET_MONTH:
-                            IncMonth();
+                            RTC_IncMonth();
                             break;
                         case CLOCK_SET_DAY:
-                            IncDay();
+                            RTC_IncDay();
                             break;
                         default:
                             break;
                     }
-                    SetTimeFlag(SET_COL_FLAG);
-                    CalculateWeek();
+                    RTC_SetTimeFlag(SET_COL_FLAG);
+                    RTC_CalculateWeek();
                 }
             }
             break;
         case DOWN_KEY:
             if (g_setItem != NORMAL_MODE) {
-                if (SettingCom() == 1) {
+                if (KEY_SettingCom() == 1) {
                     if (type->keyFlag.flag.newKey == 1) {
                         switch (g_setItem) {
                             case CLOCK_SET_HR:
-                                ToggleTimeFlag(SET_HR_FLAG);
+                                RTC_ToggleTimeFlag(SET_HR_FLAG);
                                 break;
                             default:
                                 break;
@@ -261,30 +261,30 @@ void PushKeyFunc(void)
 
                     switch (g_setItem) {
                         case CLOCK_SET_HOUR:
-                            DecHour();
+                            RTC_DecHour();
                             break;
                         case CLOCK_SET_MIN:
-                            DecMin();
+                            RTC_DecMin();
                             break;
                         case CLOCK_SET_YEAR:
-                            DecYear();
+                            RTC_DecYear();
                             break;
                         case CLOCK_SET_MONTH:
-                            DecMonth();
+                            RTC_DecMonth();
                             break;
                         case CLOCK_SET_DAY:
-                            DecDay();
+                            RTC_DecDay();
                             break;
                         default:
                             break;
                     }
-                    SetTimeFlag(SET_COL_FLAG);
-                    CalculateWeek();
+                    RTC_SetTimeFlag(SET_COL_FLAG);
+                    RTC_CalculateWeek();
                 }
             }
             break;
         case MODE_KEY:
-            if (HoldKeyCom()) {
+            if (KEY_HoldKeyCom()) {
             }
             break;
         default:
@@ -292,10 +292,10 @@ void PushKeyFunc(void)
     }
 
     type->keyFlag.flag.newKey = 0;
-    SetDisplayTime(DISPLAY_10MIN_TIME);
+    COMMON_SetDisplayTime(DISPLAY_10MIN_TIME);
 }
 
-void ReleKeyFunc(void)
+void KEY_ReleKeyFunc(void)
 {
     struct KeyType *type = &g_key;
     uint8_t key          = type->oldKey;
@@ -333,5 +333,5 @@ void ReleKeyFunc(void)
             break;
     }
 
-    SetDisplayTime(DISPLAY_10MIN_TIME);
+    COMMON_SetDisplayTime(DISPLAY_10MIN_TIME);
 }

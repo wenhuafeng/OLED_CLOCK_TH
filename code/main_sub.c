@@ -129,7 +129,7 @@ void INT_Ext0_7() interrupt 5
 {
     // External interrupt 0 ~ 7
     // TODO: add your code here
-    SetKeyFlag(KEY_FLAG);
+    KEY_SetKeyFlag(KEY_FLAG);
     CLR_KEY_INT_FLAG();
 }
 
@@ -137,7 +137,7 @@ void INT_Timer1() interrupt 14
 {
     // Timer1 interrupt
     // TODO: add your code here
-    SetKeyFlag(KEY_FLAG);
+    KEY_SetKeyFlag(KEY_FLAG);
 }
 
 void INT_WT(void) interrupt 20
@@ -147,9 +147,9 @@ void INT_WT(void) interrupt 20
     static uint8_t count = 0;
 
     count++;
-    SetTimeFlag(SET_500MS_FLAG | SET_COL_FLAG);
+    RTC_SetTimeFlag(SET_500MS_FLAG | SET_COL_FLAG);
 
     if (count & 0x01) {
-        SetTimeFlag(SET_1000MS_FLAG);
+        RTC_SetTimeFlag(SET_1000MS_FLAG);
     }
 }

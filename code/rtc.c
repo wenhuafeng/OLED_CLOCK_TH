@@ -4,14 +4,14 @@
 static union TimeFlag g_timeFlag;
 static struct TimeType g_time;
 
-void SetTimeFlag(uint8_t flags)
+void RTC_SetTimeFlag(uint8_t flags)
 {
     union TimeFlag *timeFlag = &g_timeFlag;
 
     timeFlag->flags |= flags;
 }
 
-BOOLEAN GetTimeFlag(uint8_t flags)
+BOOLEAN RTC_GetTimeFlag(uint8_t flags)
 {
     BOOLEAN ret;
     union TimeFlag *timeFlag = &g_timeFlag;
@@ -25,21 +25,21 @@ BOOLEAN GetTimeFlag(uint8_t flags)
     return ret;
 }
 
-void ToggleTimeFlag(uint8_t flags)
+void RTC_ToggleTimeFlag(uint8_t flags)
 {
     union TimeFlag *timeFlag = &g_timeFlag;
 
     timeFlag->flags ^= flags;
 }
 
-void ResetTimeFlag(uint8_t flags)
+void RTC_ResetTimeFlag(uint8_t flags)
 {
     union TimeFlag *timeFlag = &g_timeFlag;
 
     timeFlag->flags &= ~flags;
 }
 
-static uint8_t GetMaxDay(uint16_t year, uint8_t month)
+static uint8_t RTC_GetMaxDay(uint16_t year, uint8_t month)
 {
     uint8_t day;
     uint8_t daysTable[] = { 0, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 };
@@ -57,12 +57,12 @@ static uint8_t GetMaxDay(uint16_t year, uint8_t month)
     return day;
 }
 
-struct TimeType *GetTime(void)
+struct TimeType *RTC_GetTime(void)
 {
     return &g_time;
 }
 
-void TimeInit(void)
+void RTC_TimeInit(void)
 {
     struct TimeType *time = &g_time;
 
@@ -72,10 +72,10 @@ void TimeInit(void)
     time->hour = 8;
     time->min  = 0;
     time->sec  = 0;
-    CalculateWeek();
+    RTC_CalculateWeek();
 }
 
-BOOLEAN ClockRun(void)
+BOOLEAN RTC_ClockRun(void)
 {
     struct TimeType *time = &g_time;
 
@@ -98,7 +98,7 @@ BOOLEAN ClockRun(void)
 
     time->hour = 0;
     time->day++;
-    if (time->day <= GetMaxDay(time->year, time->month)) {
+    if (time->day <= RTC_GetMaxDay(time->year, time->month)) {
         goto calc_week;
     }
 
@@ -112,12 +112,12 @@ BOOLEAN ClockRun(void)
     time->year++;
 
 calc_week:
-    CalculateWeek();
+    RTC_CalculateWeek();
 
     return true;
 }
 
-void CalculateWeek(void)
+void RTC_CalculateWeek(void)
 {
     int16_t yearTemp = 0;
     int16_t yearHigh;
@@ -144,7 +144,7 @@ void CalculateWeek(void)
     time->week = wk;
 }
 
-void IncMin(void)
+void RTC_IncMin(void)
 {
     g_time.sec = 0x00;
     if (++g_time.min >= 60) {
@@ -152,7 +152,7 @@ void IncMin(void)
     }
 }
 
-void DecMin(void)
+void RTC_DecMin(void)
 {
     g_time.sec = 0x00;
     if (--g_time.min == 0xff) {
@@ -160,35 +160,35 @@ void DecMin(void)
     }
 }
 
-void IncHour(void)
+void RTC_IncHour(void)
 {
     if (++g_time.hour >= 24) {
         g_time.hour = 0;
     }
 }
 
-void DecHour(void)
+void RTC_DecHour(void)
 {
     if (--g_time.hour == 0xff) {
         g_time.hour = 23;
     }
 }
 
-void IncDay(void)
+void RTC_IncDay(void)
 {
-    if (++g_time.day > GetMaxDay(g_time.year, g_time.month)) {
+    if (++g_time.day > RTC_GetMaxDay(g_time.year, g_time.month)) {
         g_time.day = 1;
     }
 }
 
-void DecDay(void)
+void RTC_DecDay(void)
 {
     if (--g_time.day == 0) {
-        g_time.day = GetMaxDay(g_time.year, g_time.month);
+        g_time.day = RTC_GetMaxDay(g_time.year, g_time.month);
     }
 }
 
-void IncMonth(void)
+void RTC_IncMonth(void)
 {
     uint8_t MaxDay;
 
@@ -197,13 +197,13 @@ void IncMonth(void)
     }
 
     //update Max day
-    MaxDay = GetMaxDay(g_time.year, g_time.month);
+    MaxDay = RTC_GetMaxDay(g_time.year, g_time.month);
     if (g_time.day >= MaxDay) {
         g_time.day = MaxDay;
     }
 }
 
-void DecMonth(void)
+void RTC_DecMonth(void)
 {
     uint8_t MaxDay;
 
@@ -212,13 +212,13 @@ void DecMonth(void)
     }
 
     //update Max day
-    MaxDay = GetMaxDay(g_time.year, g_time.month);
+    MaxDay = RTC_GetMaxDay(g_time.year, g_time.month);
     if (g_time.day >= MaxDay) {
         g_time.day = MaxDay;
     }
 }
 
-void IncYear(void)
+void RTC_IncYear(void)
 {
     uint8_t MaxDay;
 
@@ -227,13 +227,13 @@ void IncYear(void)
     }
 
     //update Max day
-    MaxDay = GetMaxDay(g_time.year, g_time.month);
+    MaxDay = RTC_GetMaxDay(g_time.year, g_time.month);
     if (g_time.day >= MaxDay) {
         g_time.day = MaxDay;
     }
 }
 
-void DecYear(void)
+void RTC_DecYear(void)
 {
     uint8_t MaxDay;
 
@@ -242,7 +242,7 @@ void DecYear(void)
     }
 
     //update Max day
-    MaxDay = GetMaxDay(g_time.year, g_time.month);
+    MaxDay = RTC_GetMaxDay(g_time.year, g_time.month);
     if (g_time.day >= MaxDay) {
         g_time.day = MaxDay;
     }

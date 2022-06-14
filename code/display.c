@@ -18,7 +18,7 @@ void DispChangeCtr(void)
 
 void Display(void)
 {
-    if (GetSetModeCtr() != 0) {
+    if (KEY_GetSetModeCtr() != 0) {
         g_dispChange = 0;
     }
 

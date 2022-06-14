@@ -32,49 +32,27 @@ union TimeFlag {
     uint8_t flags;
 };
 
-void SetTimeFlag(uint8_t flags);
-BOOLEAN GetTimeFlag(uint8_t flags);
-void ToggleTimeFlag(uint8_t flags);
-void ResetTimeFlag(uint8_t flags);
+void RTC_SetTimeFlag(uint8_t flags);
+BOOLEAN RTC_GetTimeFlag(uint8_t flags);
+void RTC_ToggleTimeFlag(uint8_t flags);
+void RTC_ResetTimeFlag(uint8_t flags);
 
-//OS_EXT BOOLEAN F_500MS;
-//OS_EXT BOOLEAN F_SET_COL;
-//OS_EXT BOOLEAN flag_1000ms_on;
-//OS_EXT BOOLEAN flag_1min_on;
-//OS_EXT BOOLEAN Time_format; //=0,24HR. =1,12HR.
-//OS_EXT BOOLEAN flag_DM_MD;  //=0,DM. =1,MD.
+struct TimeType *RTC_GetTime(void);
+void RTC_TimeInit(void);
+uint8_t RTC_TimeFormat(uint8_t hour);
+BOOLEAN RTC_ClockRun(void);
+uint8_t RTC_GetMaxDay(uint16_t Year, uint8_t Month);
+void RTC_CalculateWeek(void);
 
-//OS_EXT uint8_t MinCtr;
-//OS_EXT BOOLEAN F_1MIN;
-//
-//enum {
-//    _24HR,
-//    _12HR,
-//};
-//OS_EXT BOOLEAN F_HR; //= 1 is 12HR,= 0 is 24HR.
-//
-//enum {
-//    _AM,
-//    _PM,
-//};
-//OS_EXT BOOLEAN F_AM_PM;
-
-struct TimeType *GetTime(void);
-void TimeInit(void);
-uint8_t TimeFormat(uint8_t hour);
-BOOLEAN ClockRun(void);
-uint8_t GetMaxDay(uint16_t Year, uint8_t Month);
-void CalculateWeek(void);
-
-void IncMin(void);
-void DecMin(void);
-void IncHour(void);
-void DecHour(void);
-void IncDay(void);
-void DecDay(void);
-void IncMonth(void);
-void DecMonth(void);
-void IncYear(void);
-void DecYear(void);
+void RTC_IncMin(void);
+void RTC_DecMin(void);
+void RTC_IncHour(void);
+void RTC_DecHour(void);
+void RTC_IncDay(void);
+void RTC_DecDay(void);
+void RTC_IncMonth(void);
+void RTC_DecMonth(void);
+void RTC_IncYear(void);
+void RTC_DecYear(void);
 
 #endif

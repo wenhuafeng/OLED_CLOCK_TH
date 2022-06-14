@@ -9,7 +9,7 @@
 
 static uint16_t g_stopModeCtr;
 
-void SetDisplayTime(uint16_t time)
+void COMMON_SetDisplayTime(uint16_t time)
 {
     g_stopModeCtr = time;
 }
@@ -23,7 +23,7 @@ static void StopModeCountDec(void)
 
 static void AllCtrRun(void)
 {
-    SetModeCountDec();
+    KEY_SetModeCountDec();
     DispChangeCtr();
     StopModeCountDec();
 }
@@ -42,36 +42,36 @@ void COMMON_Init(void)
     DelayMs(1000);
     DelayUs(1000);
     SI7021_SampleTempHumi();
-    TimeInit();
+    RTC_TimeInit();
     OLED_Init();
-    SetDisplayTime(DISPLAY_10MIN_TIME);
+    COMMON_SetDisplayTime(DISPLAY_10MIN_TIME);
 }
 
 void COMMON_Process(void)
 {
-    if (GetTimeFlag(SET_500MS_FLAG) || GetKeyFlag(KEY_FLAG)) {
-        if (GetTimeFlag(SET_500MS_FLAG)) {
-            ResetTimeFlag(SET_500MS_FLAG);
-            IncHoldKeyCtr();
+    if (RTC_GetTimeFlag(SET_500MS_FLAG) || KEY_GetKeyFlag(KEY_FLAG)) {
+        if (RTC_GetTimeFlag(SET_500MS_FLAG)) {
+            RTC_ResetTimeFlag(SET_500MS_FLAG);
+            KEY_IncHoldKeyCtr();
             AllCtrRun();
             StopMode();
         }
 
-        if (GetKeyFlag(KEY_FLAG)) {
-            ResetKeyFlag(KEY_FLAG);
-            ScanKey();
-            if (GetKeyFlag(PUSH_KEY_FLAG)) {
-                PushKeyFunc();
+        if (KEY_GetKeyFlag(KEY_FLAG)) {
+            KEY_ResetKeyFlag(KEY_FLAG);
+            KEY_ScanKey();
+            if (KEY_GetKeyFlag(PUSH_KEY_FLAG)) {
+                KEY_PushKeyFunc();
             } else {
-                ReleKeyFunc();
+                KEY_ReleKeyFunc();
             }
         }
         Display();
     }
 
-    if (GetTimeFlag(SET_1000MS_FLAG)) {
-        ResetTimeFlag(SET_1000MS_FLAG);
-        ClockRun();
+    if (RTC_GetTimeFlag(SET_1000MS_FLAG)) {
+        RTC_ResetTimeFlag(SET_1000MS_FLAG);
+        RTC_ClockRun();
         SI7021_SampleTempHumi();
     }
 }

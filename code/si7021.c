@@ -248,7 +248,7 @@ void SI7021_SampleTempHumi(void)
     count++;
     if (count > 10) {
         count = 0x00;
-        if (GetSetModeCtr() == 0) {
+        if (KEY_GetSetModeCtr() == 0) {
             SI7021_Measure(TEMP_HOLD_MASTER, (union union16 *)(&g_si7021.temp));
             DelayMs(1);
             SI7021_Measure(HUMI_HOLD_MASTER, (union union16 *)(&g_si7021.humi));
@@ -256,12 +256,12 @@ void SI7021_SampleTempHumi(void)
     }
 }
 
-int16_t GetTemp(void)
+int16_t SI7021_GetTemp(void)
 {
     return g_si7021.temp;
 }
 
-uint16_t GetHumi(void)
+uint16_t SI7021_GetHumi(void)
 {
     return g_si7021.humi;
 }

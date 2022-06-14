@@ -1,1 +1,0 @@
-"code\oled_12832.c" ROM(COMPACT) OPTIMIZE (8,SPEED) BROWSE DEBUG OBJECTEXTEND PRINT(.\output\oled_12832.lst) OBJECT(.\output\oled_12832.obj)
