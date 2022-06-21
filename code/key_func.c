@@ -1,5 +1,5 @@
 #include "key_func.h"
-#include "func_def.h"
+#include "type_define.h"
 #include "MC96F6432.h"
 #include "gp_sub.h"
 #include "rtc.h"
@@ -41,22 +41,22 @@ void KEY_IncHoldKeyCtr(void)
     g_holdKeyCtr++;
 }
 
-void KEY_SetKeyFlag(uint8_t keyFlag)
+void KEY_SetKeyFlag(uint8_t flags)
 {
     struct KeyType *type = &g_key;
 
-    type->keyFlag.flags |= keyFlag;
+    type->keyFlag.flags |= flags;
 }
 
-BOOLEAN KEY_GetKeyFlag(uint8_t flags)
+bool KEY_GetKeyFlag(uint8_t flags)
 {
-    BOOLEAN ret;
+    bool ret;
     struct KeyType *type = &g_key;
 
     if ((type->keyFlag.flags & flags) == 0) {
-        ret = false;
+        ret = FALSE;
     } else {
-        ret = true;
+        ret = TRUE;
     }
 
     return ret;
@@ -69,7 +69,7 @@ void KEY_ResetKeyFlag(uint8_t flags)
     type->keyFlag.flags &= ~flags;
 }
 
-void KEY_SetItem(enum SetItemType item)
+static void KEY_SetItem(enum SetItemType item)
 {
     g_setItem = item;
 }
@@ -103,10 +103,10 @@ void KEY_ScanKey(void)
 
     i = (KEY_PORT & ALL_KEY_MASK);
     if (i == ALL_KEY_MASK) {
-        type->keyFlag.flag.pushKey = 0;
-        type->keyFlag.flag.newKey  = 0;
-        type->keyFlag.flag.holdKey = 0;
-        type->keyFlag.flag.twoKey  = 0;
+        type->keyFlag.flag.pushKey = FALSE;
+        type->keyFlag.flag.newKey  = FALSE;
+        type->keyFlag.flag.holdKey = FALSE;
+        type->keyFlag.flag.twoKey  = FALSE;
         goto normal_quit_scan_key;
     }
 
@@ -114,9 +114,9 @@ void KEY_ScanKey(void)
 
     j = (KEY_PORT & ALL_KEY_MASK);
     if ((j == ALL_KEY_MASK) || (i != j)) {
-        type->keyFlag.flag.newKey  = 0;
-        type->keyFlag.flag.holdKey = 0;
-        type->keyFlag.flag.twoKey  = 0;
+        type->keyFlag.flag.newKey  = FALSE;
+        type->keyFlag.flag.holdKey = FALSE;
+        type->keyFlag.flag.twoKey  = FALSE;
         goto normal_quit_scan_key;
     }
 
@@ -138,15 +138,15 @@ void KEY_ScanKey(void)
 
     if (type->key == NO_KEY) {
         type->key                  = NO_KEY;
-        type->keyFlag.flag.newKey  = 0;
-        type->keyFlag.flag.holdKey = 0;
-        type->keyFlag.flag.twoKey  = 0;
+        type->keyFlag.flag.newKey  = FALSE;
+        type->keyFlag.flag.holdKey = FALSE;
+        type->keyFlag.flag.twoKey  = FALSE;
         goto normal_quit_scan_key;
     } else {
-        if (type->keyFlag.flag.pushKey == 0) {
+        if (type->keyFlag.flag.pushKey == FALSE) {
             type->oldKey               = type->key;
-            type->keyFlag.flag.newKey  = 1;
-            type->keyFlag.flag.pushKey = 1;
+            type->keyFlag.flag.newKey  = TRUE;
+            type->keyFlag.flag.pushKey = TRUE;
         }
     }
 
@@ -155,43 +155,127 @@ normal_quit_scan_key:
     ENABLE_KEY_INT();
 }
 
-BOOLEAN KEY_HoldKeyCom(void)
+#if 0
+static bool KEY_HoldKeyCom(void)
 {
     struct KeyType *type = &g_key;
 
-    if (type->keyFlag.flag.newKey == 1) {
+    if (type->keyFlag.flag.newKey == TRUE) {
         g_holdKeyCtr = 0;
     } else {
-        if (type->keyFlag.flag.holdKey == 0) {
+        if (type->keyFlag.flag.holdKey == FALSE) {
             if (g_holdKeyCtr == KEY_HOLD_TIME) {
-                type->keyFlag.flag.holdKey = 1;
-                return 1;
+                type->keyFlag.flag.holdKey = TRUE;
+                return TRUE;
             }
         }
     }
 
-    return 0;
+    return FALSE;
 }
+#endif
 
-BOOLEAN KEY_SettingCom(void)
+static bool KEY_SettingCom(void)
 {
     struct KeyType *type = &g_key;
 
-    if (type->keyFlag.flag.newKey == 1) {
+    if (type->keyFlag.flag.newKey == TRUE) {
         g_holdKeyCtr = 0;
-        return 1;
+        return TRUE;
     } else {
-        if (type->keyFlag.flag.holdKey == 0) {
+        if (type->keyFlag.flag.holdKey == FALSE) {
             if (g_holdKeyCtr == KEY_HOLD_TIME) {
-                type->keyFlag.flag.holdKey = 1;
-                return 1;
+                type->keyFlag.flag.holdKey = TRUE;
+                return TRUE;
             }
         } else {
-            return 1;
+            return TRUE;
         }
     }
 
-    return 0;
+    return FALSE;
+}
+
+static void UpKeyPush(struct KeyType *type)
+{
+    if (g_setItem == NORMAL_MODE) {
+        return;
+    }
+
+    if (KEY_SettingCom() == TRUE) {
+        if (type->keyFlag.flag.newKey == TRUE) {
+            switch (g_setItem) {
+                case CLOCK_SET_HR:
+                    RTC_ToggleTimeFlag(SET_HR_FLAG);
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        switch (g_setItem) {
+            case CLOCK_SET_HOUR:
+                RTC_IncHour();
+                break;
+            case CLOCK_SET_MIN:
+                RTC_IncMin();
+                break;
+            case CLOCK_SET_YEAR:
+                RTC_IncYear();
+                break;
+            case CLOCK_SET_MONTH:
+                RTC_IncMonth();
+                break;
+            case CLOCK_SET_DAY:
+                RTC_IncDay();
+                break;
+            default:
+                break;
+        }
+        RTC_SetTimeFlag(SET_COL_FLAG);
+        RTC_CalculateWeek();
+    }
+}
+
+static void DownKeyPush(struct KeyType *type)
+{
+    if (g_setItem == NORMAL_MODE) {
+        return;
+    }
+
+    if (KEY_SettingCom() == TRUE) {
+        if (type->keyFlag.flag.newKey == TRUE) {
+            switch (g_setItem) {
+                case CLOCK_SET_HR:
+                    RTC_ToggleTimeFlag(SET_HR_FLAG);
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        switch (g_setItem) {
+            case CLOCK_SET_HOUR:
+                RTC_DecHour();
+                break;
+            case CLOCK_SET_MIN:
+                RTC_DecMin();
+                break;
+            case CLOCK_SET_YEAR:
+                RTC_DecYear();
+                break;
+            case CLOCK_SET_MONTH:
+                RTC_DecMonth();
+                break;
+            case CLOCK_SET_DAY:
+                RTC_DecDay();
+                break;
+            default:
+                break;
+        }
+        RTC_SetTimeFlag(SET_COL_FLAG);
+        RTC_CalculateWeek();
+    }
 }
 
 void KEY_PushKeyFunc(void)
@@ -210,89 +294,39 @@ void KEY_PushKeyFunc(void)
 
     switch (type->key) {
         case UP_KEY:
-            if (g_setItem != NORMAL_MODE) {
-                if (KEY_SettingCom() == 1) {
-                    if (type->keyFlag.flag.newKey == 1) {
-                        switch (g_setItem) {
-                            case CLOCK_SET_HR:
-                                RTC_ToggleTimeFlag(SET_HR_FLAG);
-                                break;
-                            default:
-                                break;
-                        }
-                    }
-
-                    switch (g_setItem) {
-                        case CLOCK_SET_HOUR:
-                            RTC_IncHour();
-                            break;
-                        case CLOCK_SET_MIN:
-                            RTC_IncMin();
-                            break;
-                        case CLOCK_SET_YEAR:
-                            RTC_IncYear();
-                            break;
-                        case CLOCK_SET_MONTH:
-                            RTC_IncMonth();
-                            break;
-                        case CLOCK_SET_DAY:
-                            RTC_IncDay();
-                            break;
-                        default:
-                            break;
-                    }
-                    RTC_SetTimeFlag(SET_COL_FLAG);
-                    RTC_CalculateWeek();
-                }
-            }
+            UpKeyPush(type);
             break;
         case DOWN_KEY:
-            if (g_setItem != NORMAL_MODE) {
-                if (KEY_SettingCom() == 1) {
-                    if (type->keyFlag.flag.newKey == 1) {
-                        switch (g_setItem) {
-                            case CLOCK_SET_HR:
-                                RTC_ToggleTimeFlag(SET_HR_FLAG);
-                                break;
-                            default:
-                                break;
-                        }
-                    }
-
-                    switch (g_setItem) {
-                        case CLOCK_SET_HOUR:
-                            RTC_DecHour();
-                            break;
-                        case CLOCK_SET_MIN:
-                            RTC_DecMin();
-                            break;
-                        case CLOCK_SET_YEAR:
-                            RTC_DecYear();
-                            break;
-                        case CLOCK_SET_MONTH:
-                            RTC_DecMonth();
-                            break;
-                        case CLOCK_SET_DAY:
-                            RTC_DecDay();
-                            break;
-                        default:
-                            break;
-                    }
-                    RTC_SetTimeFlag(SET_COL_FLAG);
-                    RTC_CalculateWeek();
-                }
-            }
+            DownKeyPush(type);
             break;
         case MODE_KEY:
-            if (KEY_HoldKeyCom()) {
-            }
             break;
         default:
             break;
     }
 
-    type->keyFlag.flag.newKey = 0;
+    type->keyFlag.flag.newKey = FALSE;
     COMMON_SetDisplayTime(DISPLAY_10MIN_TIME);
+}
+
+static void ModeKeyRelease(void)
+{
+    if (g_setItem != NORMAL_MODE) {
+        if ((g_setItem & CLOCK_SET) != CLOCK_SET) {
+            g_setItem = NORMAL_MODE;
+        } else {
+            g_setModeCtr = SET_MODE_TIME;
+            g_setItem++;
+            if (g_setItem > CLOCK_SET_DAY) {
+                g_setItem    = NORMAL_MODE;
+                g_setModeCtr = 0x00;
+            }
+        }
+    } else {
+        g_setItem    = CLOCK_SET_HOUR;
+        g_setModeCtr = SET_MODE_TIME;
+        Timer1_init();
+    }
 }
 
 void KEY_ReleKeyFunc(void)
@@ -311,23 +345,7 @@ void KEY_ReleKeyFunc(void)
         case DOWN_KEY:
             break;
         case MODE_KEY:
-            //set clock.
-            if (g_setItem != NORMAL_MODE) {
-                if ((g_setItem & CLOCK_SET) != CLOCK_SET) {
-                    g_setItem = NORMAL_MODE;
-                } else {
-                    g_setModeCtr = SET_MODE_TIME;
-                    g_setItem++;
-                    if (g_setItem > CLOCK_SET_DAY) {
-                        g_setItem    = NORMAL_MODE;
-                        g_setModeCtr = 0x00;
-                    }
-                }
-            } else {
-                g_setItem    = CLOCK_SET_HOUR;
-                g_setModeCtr = SET_MODE_TIME;
-                Timer1_init();
-            }
+            ModeKeyRelease();
             break;
         default:
             break;

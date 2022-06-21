@@ -1,7 +1,6 @@
 #ifndef OLED_12832_H
 #define OLED_12832_H
 
-void OLED_Clear(void);
 void OLED_Off(void);
 void OLED_Init(void);
 

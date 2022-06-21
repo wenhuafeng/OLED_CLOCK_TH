@@ -1,7 +1,7 @@
 #ifndef SI7021_H
 #define SI7021_H
 
-#include "func_def.h"
+#include "type_define.h"
 
 void SI7021_SampleTempHumi(void);
 int16_t SI7021_GetTemp(void);

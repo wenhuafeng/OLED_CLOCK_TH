@@ -1,7 +1,7 @@
-#ifndef KEYFUNC_H
-#define KEYFUNC_H
+#ifndef KEY_FUNC_H
+#define KEY_FUNC_H
 
-#include "func_def.h"
+#include "type_define.h"
 
 #define DISABLE_KEY_INT() \
     do {                  \
@@ -52,19 +52,15 @@ enum SetItemType {
 
 void KEY_IncHoldKeyCtr(void);
 
-void KEY_SetKeyFlag(uint8_t keyFlag);
-BOOLEAN KEY_GetKeyFlag(uint8_t flags);
+void KEY_SetKeyFlag(uint8_t flags);
+bool KEY_GetKeyFlag(uint8_t flags);
 void KEY_ResetKeyFlag(uint8_t flags);
 
-void KEY_SetItem(enum SetItemType item);
 enum SetItemType KEY_GetItem(void);
 void KEY_SetModeCountDec(void);
 uint8_t KEY_GetSetModeCtr(void);
 
 void KEY_ScanKey(void);
-BOOLEAN KEY_HoldKeyCom(void);
-BOOLEAN KEY_SettingCom(void);
-
 void KEY_PushKeyFunc(void);
 void KEY_ReleKeyFunc(void);
 

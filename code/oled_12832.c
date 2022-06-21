@@ -1,5 +1,5 @@
 #include "oled_12832.h"
-#include "func_def.h"
+#include "type_define.h"
 #include "MC96F6432.h"
 #include "gp_sub.h"
 #include "key_func.h"
@@ -19,11 +19,11 @@
 
 #define SDA_PORT   P0
 #define SDA_NUMBER (1 << 7)
-#define SDAIN()              \
+#define SDA_IN()              \
     do {                     \
         P0IO &= ~SDA_NUMBER; \
     } while (0)
-#define SDAOUT()            \
+#define SDA_OUT()            \
     do {                    \
         P0IO |= SDA_NUMBER; \
     } while (0)
@@ -34,7 +34,17 @@
 
 static uint8_t g_letterTable[32];
 
-code uint8_t T8X16[] = {
+code uint8_t g_weekTable[8][3] = {
+    'S', 'u', 'n',
+    'M', 'o', 'n',
+    'T', 'u', 'e',
+    'W', 'e', 'd',
+    'T', 'h', 'u',
+    'F', 'r', 'i',
+    'S', 't', 'a',
+};
+
+code uint8_t g_table8X16[] = {
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, /*" ",0*/
     0x00, 0x00, 0x00, 0xF8, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x33, 0x30, 0x00, 0x00, 0x00, /*"!",1*/
     0x00, 0x10, 0x0C, 0x06, 0x10, 0x0C, 0x06, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, /*""",2*/
@@ -87,7 +97,7 @@ code uint8_t T8X16[] = {
     0xE0, 0x10, 0x08, 0x08, 0x08, 0x10, 0xE0, 0x00, 0x0F, 0x18, 0x24, 0x24, 0x38, 0x50, 0x4F, 0x00, /*"Q",49*/
     0x08, 0xF8, 0x88, 0x88, 0x88, 0x88, 0x70, 0x00, 0x20, 0x3F, 0x20, 0x00, 0x03, 0x0C, 0x30, 0x20, /*"R",50*/
     0x00, 0x70, 0x88, 0x08, 0x08, 0x08, 0x38, 0x00, 0x00, 0x38, 0x20, 0x21, 0x21, 0x22, 0x1C, 0x00, /*"S",51*/
-    0x18, 0x08, 0x08, 0xF8, 0x08, 0x08, 0x18, 0x00, 0x00, 0x00, 0x20, 0x3F, 0x20, 0x00, 0x00, 0x00, /*"T",52*/
+    0x18, 0x08, 0x08, 0xF8, 0x08, 0x08, 0x18, 0x00, 0x00, 0x00, 0x20, 0x3F, 0x20, 0x00, 0x00, 0x00, /*"t",52*/
     0x08, 0xF8, 0x08, 0x00, 0x00, 0x08, 0xF8, 0x08, 0x00, 0x1F, 0x20, 0x20, 0x20, 0x20, 0x1F, 0x00, /*"U",53*/
     0x08, 0x78, 0x88, 0x00, 0x00, 0xC8, 0x38, 0x08, 0x00, 0x00, 0x07, 0x38, 0x0E, 0x01, 0x00, 0x00, /*"V",54*/
     0xF8, 0x08, 0x00, 0xF8, 0x00, 0x08, 0xF8, 0x00, 0x03, 0x3C, 0x07, 0x00, 0x07, 0x3C, 0x03, 0x00, /*"W",55*/
@@ -134,83 +144,82 @@ code uint8_t T8X16[] = {
 
 static void I2C_Delay(uint8_t delay)
 {
-    while (delay-- != 0)
-        ;
+    while (delay-- != 0);
 }
 
 static void I2C_Start(void)
 {
-    LCD_SDA = 1;
+    LCD_SDA = HIGH;
     I2C_Delay(DELAY_TIME);
-    LCD_SCL = 1;
+    LCD_SCL = HIGH;
     I2C_Delay(DELAY_TIME);
-    LCD_SDA = 0;
+    LCD_SDA = LOW;
     I2C_Delay(DELAY_TIME);
-    LCD_SCL = 0;
+    LCD_SCL = LOW;
     I2C_Delay(DELAY_TIME);
 }
 
 static void I2C_Stop(void)
 {
-    LCD_SDA = 0;
-    LCD_SCL = 1;
+    LCD_SDA = LOW;
+    LCD_SCL = HIGH;
     I2C_Delay(DELAY_TIME);
-    LCD_SDA = 1;
+    LCD_SDA = HIGH;
     I2C_Delay(DELAY_TIME);
-    LCD_SCL = 1;
+    LCD_SCL = HIGH;
 }
 
-static BOOLEAN I2C_SendByte(uint8_t Byte)
+static bool I2C_SendByte(uint8_t send)
 {
-    BOOLEAN ret = false;
+    bool ret = FALSE;
     uint8_t i;
     uint8_t read;
 
     for (i = 0; i < 8; i++) {
-        LCD_SCL = 0;
-        if (Byte & 0x80) {
-            LCD_SDA = 1;
+        LCD_SCL = LOW;
+        if ((send & 0x80) == 0x80) {
+            LCD_SDA = HIGH;
         } else {
-            LCD_SDA = 0;
+            LCD_SDA = LOW;
         }
         I2C_Delay(DELAY_TIME);
-        LCD_SCL = 1;
+        LCD_SCL = HIGH;
         I2C_Delay(DELAY_TIME);
-        Byte = Byte << 1;
+        send <<= 1;
     }
-    LCD_SCL = 0;
+    LCD_SCL = LOW;
 
-    SDAIN();
+    SDA_IN();
     I2C_Delay(DELAY_TIME);
-    LCD_SCL = 1;
+    LCD_SCL = HIGH;
     I2C_Delay(DELAY_TIME);
     read = SDA_PORT;
     if ((read & SDA_NUMBER) == SDA_NUMBER) {
-        ret = true;
+        ret = TRUE;
     }
     I2C_Delay(DELAY_TIME);
-    LCD_SCL = 0;
-    SDAOUT();
+    LCD_SCL = LOW;
+    SDA_OUT();
     I2C_Delay(DELAY_TIME);
 
     return ret;
 }
 
-static void OLED_WriteCmd(uint8_t Cmd)
+static void OLED_WriteCmd(uint8_t cmd)
 {
     I2C_Start();
     I2C_SendByte(SI7201_ADDR);
     I2C_SendByte(0x00);
-    I2C_SendByte(Cmd);
+    I2C_SendByte(cmd);
     I2C_Stop();
 }
 
-static void OLED_WriteData(uint8_t Data)
+static void OLED_WriteData(uint8_t writeData)
 {
     I2C_Start();
     I2C_SendByte(SI7201_ADDR);
     I2C_SendByte(0x40);
-    I2C_SendByte(Data);
+    I2C_SendByte(writeData);
     I2C_Stop();
 }
 
@@ -228,11 +237,11 @@ void OLED_Off(void)
 
 void OLED_Init(void)
 {
-    LCD_RESET = 1;
+    LCD_RESET = HIGH;
     DelayMs(10);
-    LCD_RESET = 0;
+    LCD_RESET = LOW;
     DelayMs(10);
-    LCD_RESET = 1;
+    LCD_RESET = HIGH;
     DelayMs(10);
 
     OLED_WriteCmd(0xae);       // Turn off oled panel
@@ -266,10 +275,38 @@ void OLED_Init(void)
     OLED_SetXY(0, 0);
 }
 
+static void DisplayWrite(uint8_t x, uint8_t y, uint8_t index, uint8_t flags)
+{
+    uint8_t i;
+    uint8_t t, z;
+
+    OLED_SetXY(x, y);
+    for (i = 0; i < 8; i++) {
+        t = 0x00;
+        z = g_table8X16[index + i];
+        if (z & flags) {
+            t |= 0x80;
+        }
+        flags >>= 1;
+        if (z & flags) {
+            t |= 0x20;
+        }
+        flags >>= 1;
+        if (z & flags) {
+            t |= 0x08;
+        }
+        flags >>= 1;
+        if (z & flags) {
+            t |= 0x02;
+        }
+        OLED_WriteData(t);
+    }
+}
+
 void OLED_P8x16Str(void)
 {
-    uint8_t c, i, j;
-    uint8_t z, T, x, y;
+    uint8_t c, j;
+    uint8_t x, y;
 
     x = 0x00;
     y = 0x00;
@@ -277,78 +314,12 @@ void OLED_P8x16Str(void)
 
     do {
         c = g_letterTable[j] - 32;
-        OLED_SetXY(x, y);
-        for (i = 0; i < 8; i++) {
-            T = 0x00;
-            z = T8X16[c * 16 + i];
-            if (z & 0x08) {
-                T |= 0x80;
-            }
-            if (z & 0x04) {
-                T |= 0x20;
-            }
-            if (z & 0x02) {
-                T |= 0x08;
-            }
-            if (z & 0x01) {
-                T |= 0x02;
-            }
-            OLED_WriteData(T);
-        }
-        OLED_SetXY(x, y + 1);
-        for (i = 0; i < 8; i++) {
-            T = 0x00;
-            z = T8X16[c * 16 + i];
-            if (z & 0x80) {
-                T |= 0x80;
-            }
-            if (z & 0x40) {
-                T |= 0x20;
-            }
-            if (z & 0x20) {
-                T |= 0x08;
-            }
-            if (z & 0x10) {
-                T |= 0x02;
-            }
-            OLED_WriteData(T);
-        }
-        OLED_SetXY(x, y + 2);
-        for (i = 0; i < 8; i++) {
-            T = 0x00;
-            z = T8X16[c * 16 + i + 8];
-            if (z & 0x08) {
-                T |= 0x80;
-            }
-            if (z & 0x04) {
-                T |= 0x20;
-            }
-            if (z & 0x02) {
-                T |= 0x08;
-            }
-            if (z & 0x01) {
-                T |= 0x02;
-            }
-            OLED_WriteData(T);
-        }
-        OLED_SetXY(x, y + 3);
-        for (i = 0; i < 8; i++) {
-            T = 0x00;
-            z = T8X16[c * 16 + i + 8];
-            if (z & 0x80) {
-                T |= 0x80;
-            }
-            if (z & 0x40) {
-                T |= 0x20;
-            }
-            if (z & 0x20) {
-                T |= 0x08;
-            }
-            if (z & 0x10) {
-                T |= 0x02;
-            }
-            OLED_WriteData(T);
-        }
+
+        DisplayWrite(x, y, c * 16, 0x08);
+        DisplayWrite(x, y + 1, c * 16, 0x80);
+        DisplayWrite(x, y + 2, c * 16 + 8, 0x08);
+        DisplayWrite(x, y + 3, c * 16 + 8, 0x80);
+
         x += 8;
         j++;
         if (j == 16) {
@@ -357,10 +328,6 @@ void OLED_P8x16Str(void)
         }
     } while (j < 32);
 }
-
-code uint8_t WeekTable[8][3] = {
-    'S', 'u', 'n', 'M', 'o', 'n', 'T', 'u', 'e', 'W', 'e', 'd', 'T', 'h', 'u', 'F', 'r', 'i', 'S', 't', 'a',
-};
 
 void OLED_DispClock(void)
 {
@@ -412,9 +379,9 @@ void OLED_DispClock(void)
         g_letterTable[9]  = HexToAsc(day / 10);
         g_letterTable[10] = HexToAsc(day % 10);
     }
-    g_letterTable[12] = WeekTable[week][0];
-    g_letterTable[13] = WeekTable[week][1];
-    g_letterTable[14] = WeekTable[week][2];
+    g_letterTable[12] = g_weekTable[week][0];
+    g_letterTable[13] = g_weekTable[week][1];
+    g_letterTable[14] = g_weekTable[week][2];
 
     if (item == CLOCK_SET_HOUR) {
         if (RTC_GetTimeFlag(SET_COL_FLAG) || KEY_GetKeyFlag(HOLD_KEY_FLAG)) {
@@ -453,8 +420,8 @@ void OLED_DispTempHumi(void)
         g_letterTable[i] = ' ';
     }
 
-    tmp3 = temp / 100; //high
-    tmp2 = temp % 100; //low
+    tmp3 = temp / 100; // high
+    tmp2 = temp % 100; // low
     if (temp < 0) {
         g_letterTable[4] = '-';
         tmp3             = 0 - tmp3;
@@ -467,8 +434,8 @@ void OLED_DispTempHumi(void)
     g_letterTable[9]  = HexToAsc(tmp2 % 10);
     g_letterTable[10] = 'C';
 
-    tmp1                   = humi / 100; //high
-    tmp0                   = humi % 100; //low
+    tmp1                   = humi / 100; // high
+    tmp0                   = humi % 100; // low
     g_letterTable[16 + 5]  = HexToAsc(tmp1 / 10);
     g_letterTable[16 + 6]  = HexToAsc(tmp1 % 10);
     g_letterTable[16 + 7]  = '.';

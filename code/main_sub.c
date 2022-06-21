@@ -1,6 +1,6 @@
 #include "main_sub.h"
 #include "MC96F6432.h"
-#include "func_def.h"
+#include "type_define.h"
 #include "key_func.h"
 #include "rtc.h"
 

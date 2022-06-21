@@ -1,7 +1,7 @@
 #ifndef COMMON_H
 #define COMMON_H
 
-#include "func_def.h"
+#include "type_define.h"
 
 #define DISPLAY_10MIN_TIME (10 * 60 * 2) // 10MIN
 

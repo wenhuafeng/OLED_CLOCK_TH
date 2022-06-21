@@ -1,5 +1,5 @@
 #include "rtc.h"
-#include "func_def.h"
+#include "type_define.h"
 
 static union TimeFlag g_timeFlag;
 static struct TimeType g_time;
@@ -11,15 +11,15 @@ void RTC_SetTimeFlag(uint8_t flags)
     timeFlag->flags |= flags;
 }
 
-BOOLEAN RTC_GetTimeFlag(uint8_t flags)
+bool RTC_GetTimeFlag(uint8_t flags)
 {
-    BOOLEAN ret;
+    bool ret;
     union TimeFlag *timeFlag = &g_timeFlag;
 
     if ((timeFlag->flags & flags) == 0) {
-        ret = false;
+        ret = FALSE;
     } else {
-        ret = true;
+        ret = TRUE;
     }
 
     return ret;
@@ -75,25 +75,25 @@ void RTC_TimeInit(void)
     RTC_CalculateWeek();
 }
 
-BOOLEAN RTC_ClockRun(void)
+bool RTC_ClockRun(void)
 {
     struct TimeType *time = &g_time;
 
     time->sec++;
     if (time->sec < 60) {
-        return false;
+        return FALSE;
     }
 
     time->sec = 0;
     time->min++;
     if (time->min < 60) {
-        return false;
+        return FALSE;
     }
 
     time->min = 0;
     time->hour++;
     if (time->hour < 24) {
-        return false;
+        return FALSE;
     }
 
     time->hour = 0;
@@ -114,7 +114,7 @@ BOOLEAN RTC_ClockRun(void)
 calc_week:
     RTC_CalculateWeek();
 
-    return true;
+    return TRUE;
 }
 
 void RTC_CalculateWeek(void)
@@ -196,7 +196,6 @@ void RTC_IncMonth(void)
         g_time.month = 1;
     }
 
-    //update Max day
     MaxDay = RTC_GetMaxDay(g_time.year, g_time.month);
     if (g_time.day >= MaxDay) {
         g_time.day = MaxDay;
@@ -211,7 +210,6 @@ void RTC_DecMonth(void)
         g_time.month = 12;
     }
 
-    //update Max day
     MaxDay = RTC_GetMaxDay(g_time.year, g_time.month);
     if (g_time.day >= MaxDay) {
         g_time.day = MaxDay;
@@ -226,7 +224,6 @@ void RTC_IncYear(void)
         g_time.year = 2000;
     }
 
-    //update Max day
     MaxDay = RTC_GetMaxDay(g_time.year, g_time.month);
     if (g_time.day >= MaxDay) {
         g_time.day = MaxDay;
@@ -241,7 +238,6 @@ void RTC_DecYear(void)
         g_time.year = 2099;
     }
 
-    //update Max day
     MaxDay = RTC_GetMaxDay(g_time.year, g_time.month);
     if (g_time.day >= MaxDay) {
         g_time.day = MaxDay;

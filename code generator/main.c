@@ -8,7 +8,7 @@
 
 // Generated    : Sat, Jul 08, 2017 (16:55:58)
 #include	"MC96F6432.h"
-#include	"func_def.h"
+#include	"type_define.h"
 
 void main()
 {
@@ -20,9 +20,9 @@ void main()
 	Timer1_init();  	// initialize Timer1
 	WT_init();      	// initialize Watch timer
 	sei();          	// enable INT.
-	
+
 	// TODO: add your main code here
-	
+
 	while(1);
 }
 
@@ -101,36 +101,36 @@ void clock_init()
 void port_init()
 {
 	// initialize ports
-	//   1 : SXIN     out 
-	//   2 : SXOUT    out 
+	//   1 : SXIN     out
+	//   2 : SXOUT    out
 	//   3 : RESETB   in  key reset
-	//   4 : P40      out 
-	//   5 : P41      out 
-	//   6 : P42      out 
-	//   7 : P33      out 
-	//   8 : P32      out 
-	//   9 : P31      out 
-	//  10 : P30      out 
-	//  11 : P27      out 
-	//  12 : P26      out 
-	//  13 : P22      out 
-	//  14 : P21      out 
-	//  15 : P20      out 
-	//  16 : P10      out 
-	//  17 : P11      out 
-	//  18 : P12      out 
-	//  19 : P13      out 
-	//  20 : P07      out 
-	//  21 : P06      out 
-	//  22 : EINT3    in  
-	//  23 : EINT2    in  
-	//  24 : EINT1    in  
-	//  25 : P02      out 
-	//  26 : P01      out 
-	//  27 : P00      out 
-	//  30 : P50      out 
-	//  31 : P51      out 
-	//  32 : P52      out 
+	//   4 : P40      out
+	//   5 : P41      out
+	//   6 : P42      out
+	//   7 : P33      out
+	//   8 : P32      out
+	//   9 : P31      out
+	//  10 : P30      out
+	//  11 : P27      out
+	//  12 : P26      out
+	//  13 : P22      out
+	//  14 : P21      out
+	//  15 : P20      out
+	//  16 : P10      out
+	//  17 : P11      out
+	//  18 : P12      out
+	//  19 : P13      out
+	//  20 : P07      out
+	//  21 : P06      out
+	//  22 : EINT3    in
+	//  23 : EINT2    in
+	//  24 : EINT1    in
+	//  25 : P02      out
+	//  26 : P01      out
+	//  27 : P00      out
+	//  30 : P50      out
+	//  31 : P51      out
+	//  32 : P52      out
 	P0IO = 0xC7;    	// direction
 	P0PU = 0x38;    	// pullup
 	P0OD = 0x00;    	// open drain

@@ -1,9 +1,9 @@
 #include "display.h"
-#include "func_def.h"
+#include "type_define.h"
 #include "key_func.h"
 #include "oled_12832.h"
 
-static BOOLEAN g_dispChange;
+static bool g_dispChange;
 
 void DispChangeCtr(void)
 {

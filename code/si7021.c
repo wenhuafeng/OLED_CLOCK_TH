@@ -1,7 +1,7 @@
 #include <intrins.h>
 #include "MC96F6432.h"
 #include "si7021.h"
-#include "func_def.h"
+#include "type_define.h"
 #include "gp_sub.h"
 #include "key_func.h"
 
@@ -9,9 +9,6 @@
 
 #define HSB 0
 #define LSB 1
-
-#define BIT_HIGH 1
-#define BIT_LOW  0
 
 #define WRITE_CMD  0x80
 #define READ_CDM   0x81
@@ -28,42 +25,42 @@
 #define SI7021_SDA_PORT   P1
 #define SI7021_SDA_NUMBER (1 << 0)
 
-#define SI7021_SDAIN()              \
+#define SI7021_SDA_IN()             \
     do {                            \
         P1IO &= ~SI7021_SDA_NUMBER; \
     } while (0)
-#define SI7021_SDAOUT()            \
+#define SI7021_SDA_OUT()           \
     do {                           \
         P1IO |= SI7021_SDA_NUMBER; \
     } while (0)
 
-#define SI7021_SCL_HIGH()      \
-    do {                       \
-        SI7021_SCL = BIT_HIGH; \
+#define SI7021_SCL_HIGH()  \
+    do {                   \
+        SI7021_SCL = HIGH; \
     } while (0)
-#define SI7021_SCL_LOW()      \
-    do {                      \
-        SI7021_SCL = BIT_LOW; \
+#define SI7021_SCL_LOW()  \
+    do {                  \
+        SI7021_SCL = LOW; \
     } while (0)
 
-#define SI7021_SDA_HIGH()      \
-    do {                       \
-        SI7021_SDA = BIT_HIGH; \
+#define SI7021_SDA_HIGH()  \
+    do {                   \
+        SI7021_SDA = HIGH; \
     } while (0)
-#define SI7021_SDA_LOW()      \
-    do {                      \
-        SI7021_SDA = BIT_LOW; \
+#define SI7021_SDA_LOW()  \
+    do {                  \
+        SI7021_SDA = LOW; \
     } while (0)
 
 union union16 {
-    unsigned int uint;
-    unsigned char uchar[2];
+    uint16_t uint;
+    uint8_t uchar[2];
 };
 
 union union32 {
-    long _long;
-    unsigned int uint[2];
-    unsigned char uchar[4];
+    uint32_t _long;
+    uint16_t uint[2];
+    uint8_t uchar[4];
 };
 
 struct Si7021Type {
@@ -102,10 +99,10 @@ static void I2C_Stop(void)
     I2C_DelayUs(I2C_DELAY_TIME);
 }
 
-static BOOLEAN I2C_SendByte(uint8_t send_data)
+static bool I2C_SendByte(uint8_t send_data)
 {
     uint8_t i;
-    BOOLEAN ret = 0;
+    bool ret = 0;
     uint8_t delay;
     uint8_t read;
 
@@ -130,22 +127,21 @@ static BOOLEAN I2C_SendByte(uint8_t send_data)
     SI7021_SCL_HIGH();
     I2C_DelayUs(I2C_DELAY_TIME);
 
-    SI7021_SDAIN();
+    SI7021_SDA_IN();
     delay = 200;
-    while (delay--) {
+    while (delay != 0x00) {
         I2C_DelayUs(I2C_DELAY_TIME);
         read = SI7021_SDA_PORT;
         if ((read & SI7021_SDA_NUMBER) == 0x00) {
             ret = 1;
             break;
         }
+        delay--;
     }
-    SI7021_SDAOUT();
-
+    SI7021_SDA_OUT();
     if (delay == 0) {
         ret = 0;
     }
-
     SI7021_SCL_LOW();
     I2C_DelayUs(I2C_DELAY_TIME);
 
@@ -158,7 +154,7 @@ static uint8_t I2C_ReadByte(void)
     uint8_t i;
     uint8_t read;
 
-    SI7021_SDAIN();
+    SI7021_SDA_IN();
     for (i = 0; i < 8; i++) {
         SI7021_SCL_HIGH();
         I2C_DelayUs(I2C_DELAY_TIME);
@@ -169,7 +165,7 @@ static uint8_t I2C_ReadByte(void)
         }
         SI7021_SCL_LOW();
     }
-    SI7021_SDAOUT();
+    SI7021_SDA_OUT();
 
     return value;
 }
@@ -199,9 +195,9 @@ static void I2C_Nack(void)
 
 static void SI7021_Measure(uint8_t model, union union16 *value)
 {
+    uint8_t crc8;
     uint16_t tmp;
     FP32 buff;
-    uint8_t crc8;
 
     I2C_Start();
     if (0 == I2C_SendByte(SALVE_ADDR)) { // slave addr
@@ -214,7 +210,6 @@ static void SI7021_Measure(uint8_t model, union union16 *value)
     }
 
     DelayMs(100);
-
     I2C_Start();
     if (0 == I2C_SendByte(SALVE_ADDR + 1)) {
         value->uint = 0x3456;
@@ -231,12 +226,12 @@ static void SI7021_Measure(uint8_t model, union union16 *value)
 
     tmp = (value->uchar[HSB] << 8) | value->uchar[LSB];
     if (model != TEMP_HOLD_MASTER) {
-        buff = tmp * 125.0;
-        buff = buff / 65536 - 6;
+        buff          = tmp * 125.0;
+        buff          = buff / 65536 - 6;
         g_si7021.humi = buff * 100;
     } else {
-        buff = tmp * 175.72;
-        buff = buff / 65536 - 46.85;
+        buff          = tmp * 175.72;
+        buff          = buff / 65536 - 46.85;
         g_si7021.temp = buff * 100;
     }
 }

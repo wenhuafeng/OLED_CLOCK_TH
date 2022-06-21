@@ -1,8 +1,6 @@
 {
     "files.associations": {
-        "gp_sub.c": "c",
-        "gp_sub.h": "c",
-        "func_def.h": "c",
-        "GP_SUB.H": "cpp"
+        "*.c": "c",
+        "type_define.h": "c"
     }
 }

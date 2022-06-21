@@ -1,5 +1,5 @@
 #include "gp_sub.h"
-#include "func_def.h"
+#include "type_define.h"
 
 #if defined(HEX_TO_DEC) && HEX_TO_DEC
 static uint8_t g_dec[4];
@@ -39,28 +39,34 @@ uint8_t AscToHex(uint8_t asc)
 #if defined(DELAY_US) && DELAY_US
 void DelayUs(uint16_t count)
 {
-    while (count--)
-        ;
+    while (count--) ;
 }
 #endif
 
 #if defined(DELAY_MS) && DELAY_MS
-void DelayMs(uint16_t count) // ÓÃÊ¾²¨Æ÷µ÷¹ý
+void DelayMs(uint16_t count) // ï¿½ï¿½Ê¾ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 {
     /*
-    //8M
+    // 8M
     uint8_t i,j;
-    for(; count > 0; count--)
-    for(j = 21; j > 0; j--)
-    for(i = 90; i > 0; i--);
+    for(; count > 0; count--) {
+        for(j = 21; j > 0; j--) {
+            for(i = 90; i > 0; i--) {
+                ;
+            }
+        }
+    }
     */
 
-    //16M
+    // 16M
     uint8_t i, j;
-    for (; count > 0; count--)
-        for (j = 20; j > 0; j--)
-            for (i = 199; i > 0; i--)
+    for (; count > 0; count--) {
+        for (j = 20; j > 0; j--) {
+            for (i = 199; i > 0; i--) {
                 ;
+            }
+        }
+    }
 }
 #endif
 

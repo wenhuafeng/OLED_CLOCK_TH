@@ -1,5 +1,5 @@
 #include "common.h"
-#include "func_def.h"
+#include "type_define.h"
 #include "key_func.h"
 #include "display.h"
 #include "oled_12832.h"

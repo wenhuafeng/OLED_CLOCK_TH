@@ -1,7 +1,7 @@
 #ifndef RTC_H
 #define RTC_H
 
-#include "func_def.h"
+#include "type_define.h"
 
 struct TimeType {
     uint8_t sec;
@@ -33,15 +33,13 @@ union TimeFlag {
 };
 
 void RTC_SetTimeFlag(uint8_t flags);
-BOOLEAN RTC_GetTimeFlag(uint8_t flags);
+bool RTC_GetTimeFlag(uint8_t flags);
 void RTC_ToggleTimeFlag(uint8_t flags);
 void RTC_ResetTimeFlag(uint8_t flags);
 
 struct TimeType *RTC_GetTime(void);
 void RTC_TimeInit(void);
-uint8_t RTC_TimeFormat(uint8_t hour);
-BOOLEAN RTC_ClockRun(void);
-uint8_t RTC_GetMaxDay(uint16_t Year, uint8_t Month);
+bool RTC_ClockRun(void);
 void RTC_CalculateWeek(void);
 
 void RTC_IncMin(void);
