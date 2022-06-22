@@ -4,17 +4,17 @@ import os
 import datetime
 import shutil
 
-BUILD_LOG_FILE    = "build_log.txt"
-BUILD_COMMAND     = 'D:\\Keil_v5\\UV4\\UV4.exe -sg -j0 -b OLED_CLOCK_TH.uvproj -o ./build_log.txt'
+BUILD_LOG_FILE    = 'build_log.txt'
+BUILD_COMMAND     = 'D:\\Keil_v5\\UV4\\UV4.exe -sg -j0 -b oled_clock_th.uvproj -o ./build_log.txt'
 
-COPY_OUT_FILE     = 'copy output\\OLED_CLOCK_TH.hex run'
-OUT_FILE_NAME     = 'OLED_CLOCK_TH.hex'
+COPY_OUT_FILE     = 'copy output\\oled_clock_th.hex run'
+OUT_FILE_NAME     = 'oled_clock_th.hex'
 
-CHECKSUM_ALL      = 'checksum.exe OLED_CLOCK_TH.hex ALL'
-CHECKSUM_CHECKSUM = 'checksum.exe OLED_CLOCK_TH.hex CHECKSUM'
-CHECKSUM_CRC16    = 'checksum.exe OLED_CLOCK_TH.hex CRC16'
-CHECKSUM_CRC32    = 'checksum.exe OLED_CLOCK_TH.hex CRC32'
-CHECKSUM_SHA256   = 'checksum.exe OLED_CLOCK_TH.hex SHA256'
+CHECKSUM_ALL      = 'checksum.exe oled_clock_th.hex ALL'
+CHECKSUM_CHECKSUM = 'checksum.exe oled_clock_th.hex CHECKSUM'
+CHECKSUM_CRC16    = 'checksum.exe oled_clock_th.hex CRC16'
+CHECKSUM_CRC32    = 'checksum.exe oled_clock_th.hex CRC32'
+CHECKSUM_SHA256   = 'checksum.exe oled_clock_th.hex SHA256'
 
 def rm_output():
     # 删除output文件夹

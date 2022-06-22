@@ -15,15 +15,15 @@
 #define HEX_TO_DEC    0
 #define DEC_TO_HEX    0
 
-uint8_t HexToAsc(uint8_t hex);
-uint8_t AscToHex(uint8_t asc);
-void DelayUs(uint16_t count);
-void DelayMs(uint16_t count);
-uint8_t Hour24hrTo12hr(uint8_t hr);
-int16_t CelsiusToFahrenheit(int16_t c);
-void CalcWeek(void);
-uint16_t HpaToInhg(uint16_t hpa);
-void HexToDec(uint16_t hex);
-uint8_t DecToHex(uint8_t dec);
+extern uint8_t HexToAsc(uint8_t hex);
+extern uint8_t AscToHex(uint8_t asc);
+extern void DelayUs(uint16_t count);
+extern void DelayMs(uint16_t count);
+extern uint8_t Hour24hrTo12hr(uint8_t hr);
+extern int16_t CelsiusToFahrenheit(int16_t c);
+extern void CalcWeek(void);
+extern uint16_t HpaToInhg(uint16_t hpa);
+extern void HexToDec(uint16_t hex);
+extern uint8_t DecToHex(uint8_t dec);
 
 #endif

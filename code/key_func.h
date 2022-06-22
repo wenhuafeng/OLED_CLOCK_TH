@@ -50,18 +50,18 @@ enum SetItemType {
     CLOCK_SET_DAY   = 0x16,
 };
 
-void KEY_IncHoldKeyCtr(void);
+extern void KEY_IncHoldKeyCtr(void);
 
-void KEY_SetKeyFlag(uint8_t flags);
-bool KEY_GetKeyFlag(uint8_t flags);
-void KEY_ResetKeyFlag(uint8_t flags);
+extern void KEY_SetKeyFlag(uint8_t flags);
+extern bool KEY_GetKeyFlag(uint8_t flags);
+extern void KEY_ResetKeyFlag(uint8_t flags);
 
-enum SetItemType KEY_GetItem(void);
-void KEY_SetModeCountDec(void);
-uint8_t KEY_GetSetModeCtr(void);
+extern enum SetItemType KEY_GetItem(void);
+extern void KEY_SetModeCountDec(void);
+extern uint8_t KEY_GetSetModeCtr(void);
 
-void KEY_ScanKey(void);
-void KEY_PushKeyFunc(void);
-void KEY_ReleKeyFunc(void);
+extern void KEY_ScanKey(void);
+extern void KEY_PushKeyFunc(void);
+extern void KEY_ReleKeyFunc(void);
 
 #endif

@@ -1,7 +1,7 @@
 #ifndef DISPLAY_H
 #define DISPLAY_H
 
-void DispChangeCtr(void);
-void Display(void);
+extern void DispChangeCtr(void);
+extern void Display(void);
 
 #endif

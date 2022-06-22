@@ -32,25 +32,25 @@ union TimeFlag {
     uint8_t flags;
 };
 
-void RTC_SetTimeFlag(uint8_t flags);
-bool RTC_GetTimeFlag(uint8_t flags);
-void RTC_ToggleTimeFlag(uint8_t flags);
-void RTC_ResetTimeFlag(uint8_t flags);
+extern void RTC_SetTimeFlag(uint8_t flags);
+extern bool RTC_GetTimeFlag(uint8_t flags);
+extern void RTC_ToggleTimeFlag(uint8_t flags);
+extern void RTC_ResetTimeFlag(uint8_t flags);
 
-struct TimeType *RTC_GetTime(void);
-void RTC_TimeInit(void);
-bool RTC_ClockRun(void);
-void RTC_CalculateWeek(void);
+extern struct TimeType *RTC_GetTime(void);
+extern void RTC_TimeInit(void);
+extern bool RTC_ClockRun(void);
+extern void RTC_CalculateWeek(void);
 
-void RTC_IncMin(void);
-void RTC_DecMin(void);
-void RTC_IncHour(void);
-void RTC_DecHour(void);
-void RTC_IncDay(void);
-void RTC_DecDay(void);
-void RTC_IncMonth(void);
-void RTC_DecMonth(void);
-void RTC_IncYear(void);
-void RTC_DecYear(void);
+extern void RTC_IncMin(void);
+extern void RTC_DecMin(void);
+extern void RTC_IncHour(void);
+extern void RTC_DecHour(void);
+extern void RTC_IncDay(void);
+extern void RTC_DecDay(void);
+extern void RTC_IncMonth(void);
+extern void RTC_DecMonth(void);
+extern void RTC_IncYear(void);
+extern void RTC_DecYear(void);
 
 #endif
