@@ -201,40 +201,41 @@ static void UpKeyPush(struct KeyType *key)
     if (g_setItem == NORMAL_MODE) {
         return;
     }
+    if (KEY_SettingCom() == FALSE) {
+        return;
+    }
 
-    if (KEY_SettingCom() == TRUE) {
-        if (key->keyFlag.flag.newKey == TRUE) {
-            switch (g_setItem) {
-                case CLOCK_SET_HR:
-                    RTC_ToggleTimeFlag(SET_HR_FLAG);
-                    break;
-                default:
-                    break;
-            }
-        }
-
+    if (key->keyFlag.flag.newKey == TRUE) {
         switch (g_setItem) {
-            case CLOCK_SET_HOUR:
-                RTC_IncHour();
-                break;
-            case CLOCK_SET_MIN:
-                RTC_IncMin();
-                break;
-            case CLOCK_SET_YEAR:
-                RTC_IncYear();
-                break;
-            case CLOCK_SET_MONTH:
-                RTC_IncMonth();
-                break;
-            case CLOCK_SET_DAY:
-                RTC_IncDay();
+            case CLOCK_SET_HR:
+                RTC_ToggleTimeFlag(SET_HR_FLAG);
                 break;
             default:
                 break;
         }
-        RTC_SetTimeFlag(SET_COL_FLAG);
-        RTC_CalculateWeek();
     }
+
+    switch (g_setItem) {
+        case CLOCK_SET_HOUR:
+            RTC_IncHour();
+            break;
+        case CLOCK_SET_MIN:
+            RTC_IncMin();
+            break;
+        case CLOCK_SET_YEAR:
+            RTC_IncYear();
+            break;
+        case CLOCK_SET_MONTH:
+            RTC_IncMonth();
+            break;
+        case CLOCK_SET_DAY:
+            RTC_IncDay();
+            break;
+        default:
+            break;
+    }
+    RTC_SetTimeFlag(SET_COL_FLAG);
+    RTC_CalculateWeek();
 }
 
 static void DownKeyPush(struct KeyType *key)
@@ -242,40 +243,41 @@ static void DownKeyPush(struct KeyType *key)
     if (g_setItem == NORMAL_MODE) {
         return;
     }
+    if (KEY_SettingCom() == FALSE) {
+        return;
+    }
 
-    if (KEY_SettingCom() == TRUE) {
-        if (key->keyFlag.flag.newKey == TRUE) {
-            switch (g_setItem) {
-                case CLOCK_SET_HR:
-                    RTC_ToggleTimeFlag(SET_HR_FLAG);
-                    break;
-                default:
-                    break;
-            }
-        }
-
+    if (key->keyFlag.flag.newKey == TRUE) {
         switch (g_setItem) {
-            case CLOCK_SET_HOUR:
-                RTC_DecHour();
-                break;
-            case CLOCK_SET_MIN:
-                RTC_DecMin();
-                break;
-            case CLOCK_SET_YEAR:
-                RTC_DecYear();
-                break;
-            case CLOCK_SET_MONTH:
-                RTC_DecMonth();
-                break;
-            case CLOCK_SET_DAY:
-                RTC_DecDay();
+            case CLOCK_SET_HR:
+                RTC_ToggleTimeFlag(SET_HR_FLAG);
                 break;
             default:
                 break;
         }
-        RTC_SetTimeFlag(SET_COL_FLAG);
-        RTC_CalculateWeek();
     }
+
+    switch (g_setItem) {
+        case CLOCK_SET_HOUR:
+            RTC_DecHour();
+            break;
+        case CLOCK_SET_MIN:
+            RTC_DecMin();
+            break;
+        case CLOCK_SET_YEAR:
+            RTC_DecYear();
+            break;
+        case CLOCK_SET_MONTH:
+            RTC_DecMonth();
+            break;
+        case CLOCK_SET_DAY:
+            RTC_DecDay();
+            break;
+        default:
+            break;
+    }
+    RTC_SetTimeFlag(SET_COL_FLAG);
+    RTC_CalculateWeek();
 }
 
 void KEY_PushKeyFunc(void)
