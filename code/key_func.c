@@ -43,17 +43,17 @@ void KEY_IncHoldKeyCtr(void)
 
 void KEY_SetKeyFlag(uint8_t flags)
 {
-    struct KeyType *type = &g_key;
+    struct KeyType *key = &g_key;
 
-    type->keyFlag.flags |= flags;
+    key->keyFlag.flags |= flags;
 }
 
 bool KEY_GetKeyFlag(uint8_t flags)
 {
     bool ret;
-    struct KeyType *type = &g_key;
+    struct KeyType *key = &g_key;
 
-    if ((type->keyFlag.flags & flags) == 0) {
+    if ((key->keyFlag.flags & flags) == 0) {
         ret = FALSE;
     } else {
         ret = TRUE;
@@ -64,9 +64,9 @@ bool KEY_GetKeyFlag(uint8_t flags)
 
 void KEY_ResetKeyFlag(uint8_t flags)
 {
-    struct KeyType *type = &g_key;
+    struct KeyType *key = &g_key;
 
-    type->keyFlag.flags &= ~flags;
+    key->keyFlag.flags &= ~flags;
 }
 
 static void KEY_SetItem(enum SetItemType item)
@@ -97,16 +97,16 @@ void KEY_SetModeCountDec(void)
 void KEY_ScanKey(void)
 {
     uint8_t i, j;
-    struct KeyType *type = &g_key;
+    struct KeyType *key = &g_key;
 
-    type->key = NO_KEY;
+    key->key = NO_KEY;
 
     i = (KEY_PORT & ALL_KEY_MASK);
     if (i == ALL_KEY_MASK) {
-        type->keyFlag.flag.pushKey = FALSE;
-        type->keyFlag.flag.newKey  = FALSE;
-        type->keyFlag.flag.holdKey = FALSE;
-        type->keyFlag.flag.twoKey  = FALSE;
+        key->keyFlag.flag.pushKey = FALSE;
+        key->keyFlag.flag.newKey  = FALSE;
+        key->keyFlag.flag.holdKey = FALSE;
+        key->keyFlag.flag.twoKey  = FALSE;
         goto normal_quit_scan_key;
     }
 
@@ -114,9 +114,9 @@ void KEY_ScanKey(void)
 
     j = (KEY_PORT & ALL_KEY_MASK);
     if ((j == ALL_KEY_MASK) || (i != j)) {
-        type->keyFlag.flag.newKey  = FALSE;
-        type->keyFlag.flag.holdKey = FALSE;
-        type->keyFlag.flag.twoKey  = FALSE;
+        key->keyFlag.flag.newKey  = FALSE;
+        key->keyFlag.flag.holdKey = FALSE;
+        key->keyFlag.flag.twoKey  = FALSE;
         goto normal_quit_scan_key;
     }
 
@@ -124,29 +124,29 @@ void KEY_ScanKey(void)
     i = (KEY_PORT & ALL_KEY_MASK);
     switch (i) {
         case KEY1_MASK:
-            type->key = KEY1;
+            key->key = KEY1;
             break;
         case KEY2_MASK:
-            type->key = KEY2;
+            key->key = KEY2;
             break;
         case KEY3_MASK:
-            type->key = KEY3;
+            key->key = KEY3;
             break;
         default:
             break;
     }
 
-    if (type->key == NO_KEY) {
-        type->key                  = NO_KEY;
-        type->keyFlag.flag.newKey  = FALSE;
-        type->keyFlag.flag.holdKey = FALSE;
-        type->keyFlag.flag.twoKey  = FALSE;
+    if (key->key == NO_KEY) {
+        key->key                  = NO_KEY;
+        key->keyFlag.flag.newKey  = FALSE;
+        key->keyFlag.flag.holdKey = FALSE;
+        key->keyFlag.flag.twoKey  = FALSE;
         goto normal_quit_scan_key;
     } else {
-        if (type->keyFlag.flag.pushKey == FALSE) {
-            type->oldKey               = type->key;
-            type->keyFlag.flag.newKey  = TRUE;
-            type->keyFlag.flag.pushKey = TRUE;
+        if (key->keyFlag.flag.pushKey == FALSE) {
+            key->oldKey               = key->key;
+            key->keyFlag.flag.newKey  = TRUE;
+            key->keyFlag.flag.pushKey = TRUE;
         }
     }
 
@@ -158,14 +158,14 @@ normal_quit_scan_key:
 #if 0
 static bool KEY_HoldKeyCom(void)
 {
-    struct KeyType *type = &g_key;
+    struct KeyType *key = &g_key;
 
-    if (type->keyFlag.flag.newKey == TRUE) {
+    if (key->keyFlag.flag.newKey == TRUE) {
         g_holdKeyCtr = 0;
     } else {
-        if (type->keyFlag.flag.holdKey == FALSE) {
+        if (key->keyFlag.flag.holdKey == FALSE) {
             if (g_holdKeyCtr == KEY_HOLD_TIME) {
-                type->keyFlag.flag.holdKey = TRUE;
+                key->keyFlag.flag.holdKey = TRUE;
                 return TRUE;
             }
         }
@@ -177,15 +177,15 @@ static bool KEY_HoldKeyCom(void)
 
 static bool KEY_SettingCom(void)
 {
-    struct KeyType *type = &g_key;
+    struct KeyType *key = &g_key;
 
-    if (type->keyFlag.flag.newKey == TRUE) {
+    if (key->keyFlag.flag.newKey == TRUE) {
         g_holdKeyCtr = 0;
         return TRUE;
     } else {
-        if (type->keyFlag.flag.holdKey == FALSE) {
+        if (key->keyFlag.flag.holdKey == FALSE) {
             if (g_holdKeyCtr == KEY_HOLD_TIME) {
-                type->keyFlag.flag.holdKey = TRUE;
+                key->keyFlag.flag.holdKey = TRUE;
                 return TRUE;
             }
         } else {
@@ -196,14 +196,14 @@ static bool KEY_SettingCom(void)
     return FALSE;
 }
 
-static void UpKeyPush(struct KeyType *type)
+static void UpKeyPush(struct KeyType *key)
 {
     if (g_setItem == NORMAL_MODE) {
         return;
     }
 
     if (KEY_SettingCom() == TRUE) {
-        if (type->keyFlag.flag.newKey == TRUE) {
+        if (key->keyFlag.flag.newKey == TRUE) {
             switch (g_setItem) {
                 case CLOCK_SET_HR:
                     RTC_ToggleTimeFlag(SET_HR_FLAG);
@@ -237,14 +237,14 @@ static void UpKeyPush(struct KeyType *type)
     }
 }
 
-static void DownKeyPush(struct KeyType *type)
+static void DownKeyPush(struct KeyType *key)
 {
     if (g_setItem == NORMAL_MODE) {
         return;
     }
 
     if (KEY_SettingCom() == TRUE) {
-        if (type->keyFlag.flag.newKey == TRUE) {
+        if (key->keyFlag.flag.newKey == TRUE) {
             switch (g_setItem) {
                 case CLOCK_SET_HR:
                     RTC_ToggleTimeFlag(SET_HR_FLAG);
@@ -280,24 +280,24 @@ static void DownKeyPush(struct KeyType *type)
 
 void KEY_PushKeyFunc(void)
 {
-    struct KeyType *type = &g_key;
+    struct KeyType *key = &g_key;
 
-    if ((type->key >= MAX_KEY) && (type->key == NO_KEY)) {
+    if ((key->key >= MAX_KEY) && (key->key == NO_KEY)) {
         return;
     }
 
-    if (type->keyFlag.flag.newKey || type->keyFlag.flag.holdKey) {
+    if (key->keyFlag.flag.newKey || key->keyFlag.flag.holdKey) {
         if (g_setItem != NORMAL_MODE) {
             g_setModeCtr = SET_MODE_TIME;
         }
     }
 
-    switch (type->key) {
+    switch (key->key) {
         case UP_KEY:
-            UpKeyPush(type);
+            UpKeyPush(key);
             break;
         case DOWN_KEY:
-            DownKeyPush(type);
+            DownKeyPush(key);
             break;
         case MODE_KEY:
             break;
@@ -305,7 +305,7 @@ void KEY_PushKeyFunc(void)
             break;
     }
 
-    type->keyFlag.flag.newKey = FALSE;
+    key->keyFlag.flag.newKey = FALSE;
     COMMON_SetDisplayTime(DISPLAY_10MIN_TIME);
 }
 
@@ -331,15 +331,15 @@ static void ModeKeyRelease(void)
 
 void KEY_ReleKeyFunc(void)
 {
-    struct KeyType *type = &g_key;
-    uint8_t key          = type->oldKey;
+    struct KeyType *key = &g_key;
+    uint8_t old = key->oldKey;
 
-    type->oldKey = 0x00;
+    key->oldKey = 0x00;
     if ((key >= MAX_KEY) && (key == NO_KEY)) {
         return;
     }
 
-    switch (key) {
+    switch (old) {
         case UP_KEY:
             break;
         case DOWN_KEY:
