@@ -41,13 +41,13 @@ struct KeyType {
 
 enum SetItemType {
     NORMAL_MODE,
-    CLOCK_SET       = 0x10,
-    CLOCK_SET_HR    = 0x11,
-    CLOCK_SET_HOUR  = 0x12,
-    CLOCK_SET_MIN   = 0x13,
-    CLOCK_SET_YEAR  = 0x14,
-    CLOCK_SET_MONTH = 0x15,
-    CLOCK_SET_DAY   = 0x16,
+    CLOCK_SET,
+    CLOCK_SET_HR,
+    CLOCK_SET_HOUR,
+    CLOCK_SET_MIN,
+    CLOCK_SET_YEAR,
+    CLOCK_SET_MONTH,
+    CLOCK_SET_DAY,
 };
 
 extern void KEY_IncHoldKeyCtr(void);
