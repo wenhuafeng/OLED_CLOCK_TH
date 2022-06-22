@@ -70,7 +70,7 @@ void COMMON_Process(void)
     }
 
     if (RTC_GetTimeFlag(SET_1000MS_FLAG)) {
-        RTC_SetTimeFlag(SET_1000MS_FLAG);
+        RTC_ClearTimeFlag(SET_1000MS_FLAG);
         RTC_ClockRun();
         SI7021_SampleTempHumi();
     }
