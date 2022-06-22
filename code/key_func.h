@@ -52,9 +52,9 @@ enum SetItemType {
 
 extern void KEY_IncHoldKeyCtr(void);
 
-extern void KEY_SetKeyFlag(uint8_t flags);
+extern void KEY_ClearKeyFlag(uint8_t flags);
 extern bool KEY_GetKeyFlag(uint8_t flags);
-extern void KEY_ResetKeyFlag(uint8_t flags);
+extern void KEY_SetKeyFlag(uint8_t flags);
 
 extern enum SetItemType KEY_GetItem(void);
 extern void KEY_SetModeCountDec(void);

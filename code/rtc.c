@@ -4,6 +4,13 @@
 static union TimeFlag g_timeFlag;
 static struct TimeType g_time;
 
+void RTC_ClearTimeFlag(uint8_t flags)
+{
+    union TimeFlag *timeFlag = &g_timeFlag;
+
+    timeFlag->flags &= ~flags;
+}
+
 void RTC_SetTimeFlag(uint8_t flags)
 {
     union TimeFlag *timeFlag = &g_timeFlag;
@@ -30,13 +37,6 @@ void RTC_ToggleTimeFlag(uint8_t flags)
     union TimeFlag *timeFlag = &g_timeFlag;
 
     timeFlag->flags ^= flags;
-}
-
-void RTC_ResetTimeFlag(uint8_t flags)
-{
-    union TimeFlag *timeFlag = &g_timeFlag;
-
-    timeFlag->flags &= ~flags;
 }
 
 static uint8_t RTC_GetMaxDay(uint16_t year, uint8_t month)

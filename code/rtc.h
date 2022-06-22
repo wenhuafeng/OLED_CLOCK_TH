@@ -32,10 +32,10 @@ union TimeFlag {
     uint8_t flags;
 };
 
+void RTC_ClearTimeFlag(uint8_t flags);
 extern void RTC_SetTimeFlag(uint8_t flags);
 extern bool RTC_GetTimeFlag(uint8_t flags);
 extern void RTC_ToggleTimeFlag(uint8_t flags);
-extern void RTC_ResetTimeFlag(uint8_t flags);
 
 extern struct TimeType *RTC_GetTime(void);
 extern void RTC_TimeInit(void);

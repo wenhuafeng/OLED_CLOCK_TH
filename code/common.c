@@ -9,11 +9,6 @@
 
 static uint16_t g_stopModeCtr;
 
-void COMMON_SetDisplayTime(uint16_t time)
-{
-    g_stopModeCtr = time;
-}
-
 static void StopModeCountDec(void)
 {
     if (g_stopModeCtr) {
@@ -37,6 +32,11 @@ static void StopMode(void)
     OLED_Off();
 }
 
+void COMMON_SetDisplayTime(uint16_t time)
+{
+    g_stopModeCtr = time;
+}
+
 void COMMON_Init(void)
 {
     DelayMs(1000);
@@ -51,14 +51,14 @@ void COMMON_Process(void)
 {
     if (RTC_GetTimeFlag(SET_500MS_FLAG) || KEY_GetKeyFlag(KEY_FLAG)) {
         if (RTC_GetTimeFlag(SET_500MS_FLAG)) {
-            RTC_ResetTimeFlag(SET_500MS_FLAG);
+            RTC_ClearTimeFlag(SET_500MS_FLAG);
             KEY_IncHoldKeyCtr();
             AllCtrRun();
             StopMode();
         }
 
         if (KEY_GetKeyFlag(KEY_FLAG)) {
-            KEY_ResetKeyFlag(KEY_FLAG);
+            KEY_ClearKeyFlag(KEY_FLAG);
             KEY_ScanKey();
             if (KEY_GetKeyFlag(PUSH_KEY_FLAG)) {
                 KEY_PushKeyFunc();
@@ -70,7 +70,7 @@ void COMMON_Process(void)
     }
 
     if (RTC_GetTimeFlag(SET_1000MS_FLAG)) {
-        RTC_ResetTimeFlag(SET_1000MS_FLAG);
+        RTC_SetTimeFlag(SET_1000MS_FLAG);
         RTC_ClockRun();
         SI7021_SampleTempHumi();
     }

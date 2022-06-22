@@ -41,6 +41,13 @@ void KEY_IncHoldKeyCtr(void)
     g_holdKeyCtr++;
 }
 
+void KEY_ClearKeyFlag(uint8_t flags)
+{
+    struct KeyType *key = &g_key;
+
+    key->keyFlag.flags &= ~flags;
+}
+
 void KEY_SetKeyFlag(uint8_t flags)
 {
     struct KeyType *key = &g_key;
@@ -60,13 +67,6 @@ bool KEY_GetKeyFlag(uint8_t flags)
     }
 
     return ret;
-}
-
-void KEY_ResetKeyFlag(uint8_t flags)
-{
-    struct KeyType *key = &g_key;
-
-    key->keyFlag.flags &= ~flags;
 }
 
 static void KEY_SetItem(enum SetItemType item)
