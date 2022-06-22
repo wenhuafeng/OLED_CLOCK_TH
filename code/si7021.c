@@ -213,12 +213,12 @@ static bool SI7021_Measure(uint8_t type)
 
     temp = (uint16_t)(read[HSB] << 8) | read[LSB];
     if (type != TEMP_HOLD_MASTER) {
-        buffer          = temp * 125.0;
-        buffer          = buffer / 65536 - 6;
+        buffer        = temp * 125.0;
+        buffer        = buffer / 65536 - 6;
         g_si7021.humi = buffer * 100;
     } else {
-        buffer          = temp * 175.72;
-        buffer          = buffer / 65536 - 46.85;
+        buffer        = temp * 175.72;
+        buffer        = buffer / 65536 - 46.85;
         g_si7021.temp = buffer * 100;
     }
 
