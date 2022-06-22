@@ -329,117 +329,181 @@ void OLED_P8x16Str(void)
     } while (j < 32);
 }
 
-void OLED_DispClock(void)
+static void ClearDispBuffer(void)
 {
     uint8_t i;
-    enum SetItemType item = KEY_GetItem();
-    struct TimeType *time = RTC_GetTime();
-    uint8_t sec           = time->sec;
-    uint8_t min           = time->min;
-    uint8_t hour          = time->hour;
-    uint8_t day           = time->day;
-    uint8_t week          = time->week;
-    uint8_t month         = time->month;
-    uint16_t year         = time->year;
 
     for (i = 0; i < 32; i++) {
         g_letterTable[i] = ' ';
     }
+}
+
+static void DispYear(enum SetItemType item, struct TimeType *time)
+{
+    bool f_temp = FALSE;
 
     if (item == CLOCK_SET_YEAR) {
         if (RTC_GetTimeFlag(SET_COL_FLAG) || KEY_GetKeyFlag(HOLD_KEY_FLAG)) {
-            g_letterTable[1] = '2';
-            g_letterTable[2] = '0';
-            g_letterTable[3] = HexToAsc(year % 100 / 10);
-            g_letterTable[4] = HexToAsc(year % 100 % 10);
+            f_temp = TRUE;
         }
     } else {
+        f_temp = TRUE;
+    }
+    if (f_temp == TRUE) {
         g_letterTable[1] = '2';
         g_letterTable[2] = '0';
-        g_letterTable[3] = HexToAsc(year % 100 / 10);
-        g_letterTable[4] = HexToAsc(year % 100 % 10);
+        g_letterTable[3] = HexToAsc(time->year % 100 / 10);
+        g_letterTable[4] = HexToAsc(time->year % 100 % 10);
     }
+}
+
+static void DispMonth(enum SetItemType item, struct TimeType *time)
+{
+    bool f_temp = FALSE;
+
     g_letterTable[5] = '-';
     if (item == CLOCK_SET_MONTH) {
         if (RTC_GetTimeFlag(SET_COL_FLAG) || KEY_GetKeyFlag(HOLD_KEY_FLAG)) {
-            g_letterTable[6] = HexToAsc(month / 10);
-            g_letterTable[7] = HexToAsc(month % 10);
+            f_temp = TRUE;
         }
     } else {
-        g_letterTable[6] = HexToAsc(month / 10);
-        g_letterTable[7] = HexToAsc(month % 10);
+        f_temp = TRUE;
     }
+    if (f_temp == TRUE) {
+        g_letterTable[6] = HexToAsc(time->month / 10);
+        g_letterTable[7] = HexToAsc(time->month % 10);
+    }
+}
+
+static void DispDay(enum SetItemType item, struct TimeType *time)
+{
+    bool f_temp = FALSE;
+
     g_letterTable[8] = '-';
     if (item == CLOCK_SET_DAY) {
         if (RTC_GetTimeFlag(SET_COL_FLAG) || KEY_GetKeyFlag(HOLD_KEY_FLAG)) {
-            g_letterTable[9]  = HexToAsc(day / 10);
-            g_letterTable[10] = HexToAsc(day % 10);
+            f_temp = TRUE;
         }
     } else {
-        g_letterTable[9]  = HexToAsc(day / 10);
-        g_letterTable[10] = HexToAsc(day % 10);
+        f_temp = TRUE;
     }
-    g_letterTable[12] = g_weekTable[week][0];
-    g_letterTable[13] = g_weekTable[week][1];
-    g_letterTable[14] = g_weekTable[week][2];
+    if (f_temp == TRUE) {
+        g_letterTable[9]  = HexToAsc(time->day / 10);
+        g_letterTable[10] = HexToAsc(time->day % 10);
+    }
+}
+
+static void DispWeek(struct TimeType *time)
+{
+    g_letterTable[12] = g_weekTable[time->week][0];
+    g_letterTable[13] = g_weekTable[time->week][1];
+    g_letterTable[14] = g_weekTable[time->week][2];
+}
+
+static void DispHour(enum SetItemType item, struct TimeType *time)
+{
+    bool f_temp = FALSE;
 
     if (item == CLOCK_SET_HOUR) {
         if (RTC_GetTimeFlag(SET_COL_FLAG) || KEY_GetKeyFlag(HOLD_KEY_FLAG)) {
-            g_letterTable[20] = HexToAsc(hour / 10);
-            g_letterTable[21] = HexToAsc(hour % 10);
+            f_temp = TRUE;
         }
     } else {
-        g_letterTable[20] = HexToAsc(hour / 10);
-        g_letterTable[21] = HexToAsc(hour % 10);
+        f_temp = TRUE;
     }
+    if (f_temp == TRUE) {
+        g_letterTable[20] = HexToAsc(time->hour / 10);
+        g_letterTable[21] = HexToAsc(time->hour % 10);
+    }
+}
+
+static void DispMin(enum SetItemType item, struct TimeType *time)
+{
+    bool f_temp = FALSE;
+
     g_letterTable[22] = ':';
     if (item == CLOCK_SET_MIN) {
         if (RTC_GetTimeFlag(SET_COL_FLAG) || KEY_GetKeyFlag(HOLD_KEY_FLAG)) {
-            g_letterTable[23] = HexToAsc(min / 10);
-            g_letterTable[24] = HexToAsc(min % 10);
+            f_temp = TRUE;
         }
     } else {
-        g_letterTable[23] = HexToAsc(min / 10);
-        g_letterTable[24] = HexToAsc(min % 10);
+        f_temp = TRUE;
+    }
+    if (f_temp == TRUE) {
+        g_letterTable[23] = HexToAsc(time->min / 10);
+        g_letterTable[24] = HexToAsc(time->min % 10);
+    }
+}
+
+static void DispSec(struct TimeType *time)
+{
+    g_letterTable[25] = ':';
+    g_letterTable[26] = HexToAsc(time->sec / 10);
+    g_letterTable[27] = HexToAsc(time->sec % 10);
+}
+
+void OLED_DispClock(void)
+{
+    enum SetItemType item = KEY_GetItem();
+    struct TimeType *time = RTC_GetTime();
+
+    ClearDispBuffer();
+    DispYear(item, time);
+    DispMonth(item, time);
+    DispDay(item, time);
+    DispWeek(time);
+    DispHour(item, time);
+    DispMin(item, time);
+    DispSec(time);
+}
+
+static void DispTemperature(int16_t temp)
+{
+    uint8_t tempL;
+    uint8_t tempH;
+    uint16_t negative;
+
+    if (temp < 0) {
+        g_letterTable[4] = '-';
+        negative = ~temp;
+        negative++;
+    } else {
+        negative = temp;
     }
 
-    g_letterTable[25] = ':';
-    g_letterTable[26] = HexToAsc(sec / 10);
-    g_letterTable[27] = HexToAsc(sec % 10);
+    tempH = negative / 100; // high
+    tempL = negative % 100; // low
+
+    g_letterTable[5]  = HexToAsc(tempH / 10);
+    g_letterTable[6]  = HexToAsc(tempH % 10);
+    g_letterTable[7]  = '.';
+    g_letterTable[8]  = HexToAsc(tempL / 10);
+    g_letterTable[9]  = HexToAsc(tempL % 10);
+    g_letterTable[10] = 'C';
+}
+
+static void DispHumidity(uint16_t humi)
+{
+    uint8_t tempL;
+    uint8_t tempH;
+
+    tempH = humi / 100; // high
+    tempL = humi % 100; // low
+
+    g_letterTable[16 + 5]  = HexToAsc(tempH / 10);
+    g_letterTable[16 + 6]  = HexToAsc(tempH % 10);
+    g_letterTable[16 + 7]  = '.';
+    g_letterTable[16 + 8]  = HexToAsc(tempL / 10);
+    g_letterTable[16 + 9]  = HexToAsc(tempL % 10);
+    g_letterTable[16 + 10] = '%';
 }
 
 void OLED_DispTempHumi(void)
 {
-    uint8_t i;
-    uint8_t tmp0, tmp1;
-    int8_t tmp2, tmp3;
     int16_t temp  = SI7021_GetTemp();
     uint16_t humi = SI7021_GetHumi();
 
-    for (i = 0; i < 32; i++) {
-        g_letterTable[i] = ' ';
-    }
-
-    tmp3 = temp / 100; // high
-    tmp2 = temp % 100; // low
-    if (temp < 0) {
-        g_letterTable[4] = '-';
-        tmp3             = 0 - tmp3;
-        tmp2             = 0 - tmp2;
-    }
-    g_letterTable[5]  = HexToAsc(tmp3 / 10);
-    g_letterTable[6]  = HexToAsc(tmp3 % 10);
-    g_letterTable[7]  = '.';
-    g_letterTable[8]  = HexToAsc(tmp2 / 10);
-    g_letterTable[9]  = HexToAsc(tmp2 % 10);
-    g_letterTable[10] = 'C';
-
-    tmp1                   = humi / 100; // high
-    tmp0                   = humi % 100; // low
-    g_letterTable[16 + 5]  = HexToAsc(tmp1 / 10);
-    g_letterTable[16 + 6]  = HexToAsc(tmp1 % 10);
-    g_letterTable[16 + 7]  = '.';
-    g_letterTable[16 + 8]  = HexToAsc(tmp0 / 10);
-    g_letterTable[16 + 9]  = HexToAsc(tmp0 % 10);
-    g_letterTable[16 + 10] = '%';
+    ClearDispBuffer();
+    DispTemperature(temp);
+    DispHumidity(humi);
 }
