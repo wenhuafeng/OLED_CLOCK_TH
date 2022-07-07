@@ -3,7 +3,7 @@
 
 #include "type_define.h"
 
-#define DISPLAY_10MIN_TIME (10 * 60 * 2) // 10MIN
+#define DISPLAY_10MIN_TIME (10 * 60 * 2)
 
 extern void COMMON_SetDisplayTime(uint16_t time);
 extern void COMMON_Init(void);

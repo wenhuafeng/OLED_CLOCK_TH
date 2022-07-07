@@ -21,7 +21,7 @@ extern void DelayUs(uint16_t count);
 extern void DelayMs(uint16_t count);
 extern uint8_t Hour24hrTo12hr(uint8_t hr);
 extern int16_t CelsiusToFahrenheit(int16_t c);
-extern void CalcWeek(void);
+extern void CalcWeek(struct TimeType *time);
 extern uint16_t HpaToInhg(uint16_t hpa);
 extern void HexToDec(uint16_t hex);
 extern uint8_t DecToHex(uint8_t dec);

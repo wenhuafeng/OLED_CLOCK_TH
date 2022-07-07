@@ -1,32 +1,32 @@
-[Time]2022-06-22 18:21:58 : Info:  [main] argc:3
-[Time]2022-06-22 18:21:58 : Info:  [main] argv[0]:checksum.exe
-[Time]2022-06-22 18:21:58 : Info:  [main] argv[1]:oled_clock_th.hex
-[Time]2022-06-22 18:21:58 : Info:  [main] argv[2]:ALL
-[Time]2022-06-22 18:21:58 : Info:  [main] software version and build time: v1.0.1 Apr 21 2022 21:04:22
-[Time]2022-06-22 18:21:58 : Info:  [common] oled_clock_th.hex modify time: 2022-06-22 18:21:58
-[Time]2022-06-22 18:21:58 : Info:  [common] fseek file: oled_clock_th.hex fileSize: 23062
-[Time]2022-06-22 18:21:58 : Info:  [common] read file: oled_clock_th.hex length: 23062
-[Time]2022-06-22 18:21:58 : Info:  [checksum] 
+[Time]2022-07-07 08:33:30 : Info:  [main] argc:3
+[Time]2022-07-07 08:33:30 : Info:  [main] argv[0]:checksum.exe
+[Time]2022-07-07 08:33:30 : Info:  [main] argv[1]:oled_clock_th.hex
+[Time]2022-07-07 08:33:30 : Info:  [main] argv[2]:ALL
+[Time]2022-07-07 08:33:30 : Info:  [main] software version and build time: v1.0.1 Apr 21 2022 21:04:22
+[Time]2022-07-07 08:33:30 : Info:  [common] oled_clock_th.hex modify time: 2022-07-07 08:33:30
+[Time]2022-07-07 08:33:30 : Info:  [common] fseek file: oled_clock_th.hex fileSize: 23062
+[Time]2022-07-07 08:33:30 : Info:  [common] read file: oled_clock_th.hex length: 23062
+[Time]2022-07-07 08:33:30 : Info:  [checksum] 
 --------------------------------------------------------------------------------------------------------------
-[Time]2022-06-22 18:21:58 : Info:  [checksum] CHECKSUM_OUTPUT:
-[Time]2022-06-22 18:21:58 : Info:  [checksum] 991b12fd
-[Time]2022-06-22 18:21:58 : Info:  [checksum] 
+[Time]2022-07-07 08:33:30 : Info:  [checksum] CHECKSUM_OUTPUT:
+[Time]2022-07-07 08:33:30 : Info:  [checksum] a83102fe
+[Time]2022-07-07 08:33:30 : Info:  [checksum] 
 --------------------------------------------------------------------------------------------------------------
-[Time]2022-06-22 18:21:58 : Info:  [crc16_ccitt_false] 
+[Time]2022-07-07 08:33:30 : Info:  [crc16_ccitt_false] 
 --------------------------------------------------------------------------------------------------------------
-[Time]2022-06-22 18:21:58 : Info:  [crc16_ccitt_false] CRC16_CCITT_FALSE_OUTPUT:
-[Time]2022-06-22 18:21:58 : Info:  [crc16_ccitt_false] c6d3
-[Time]2022-06-22 18:21:58 : Info:  [crc16_ccitt_false] 
+[Time]2022-07-07 08:33:30 : Info:  [crc16_ccitt_false] CRC16_CCITT_FALSE_OUTPUT:
+[Time]2022-07-07 08:33:30 : Info:  [crc16_ccitt_false] d7a1
+[Time]2022-07-07 08:33:30 : Info:  [crc16_ccitt_false] 
 --------------------------------------------------------------------------------------------------------------
-[Time]2022-06-22 18:21:58 : Info:  [crc32] 
+[Time]2022-07-07 08:33:30 : Info:  [crc32] 
 --------------------------------------------------------------------------------------------------------------
-[Time]2022-06-22 18:21:58 : Info:  [crc32] CRC32_OUTPUT:
-[Time]2022-06-22 18:21:58 : Info:  [crc32] f4fe1428
-[Time]2022-06-22 18:21:58 : Info:  [crc32] 
+[Time]2022-07-07 08:33:30 : Info:  [crc32] CRC32_OUTPUT:
+[Time]2022-07-07 08:33:30 : Info:  [crc32] 87ea9f92
+[Time]2022-07-07 08:33:30 : Info:  [crc32] 
 --------------------------------------------------------------------------------------------------------------
-[Time]2022-06-22 18:21:58 : Info:  [sha256] 
+[Time]2022-07-07 08:33:30 : Info:  [sha256] 
 --------------------------------------------------------------------------------------------------------------
-[Time]2022-06-22 18:21:58 : Info:  [sha256] HASH256_OUTPUT:
-[Time]2022-06-22 18:21:58 : Info:  [sha256] d448dc59f686cca4fb469643991f11889231b2fe6f33935c20e26fdfe6c77abc
-[Time]2022-06-22 18:21:58 : Info:  [sha256] 
+[Time]2022-07-07 08:33:30 : Info:  [sha256] HASH256_OUTPUT:
+[Time]2022-07-07 08:33:30 : Info:  [sha256] 25f2a050ed84e6be4e12592b6a881133c74f37be2a369fc594bf5fb3aca6a963
+[Time]2022-07-07 08:33:30 : Info:  [sha256] 
 --------------------------------------------------------------------------------------------------------------
